@@ -84,22 +84,23 @@ if (isset($project)){
         $eXist_url = $eXist_config->url;
         $eXist_credentials = $eXist_config->username . ':' . $eXist_config->password;
         
+        $count = 1;
         if (array_key_exists('ids', $project)){
             $ids = explode('&', $project['ids']);
             
             foreach($data as $row){
                 if (in_array($row['ID'], $ids)){
-                    generate_nuds($row, $project, $obverses, $reverses);
+                    generate_nuds($row, $project, $obverses, $reverses, $count);
                 }
+                $count++;
             }
             
         } else {
             echo "Process all\n";
             
-            foreach($data as $row){
-                
-                generate_nuds($row, $project, $obverses, $reverses);
-
+            foreach($data as $row){                
+                generate_nuds($row, $project, $obverses, $reverses, $count);
+                $count++;
             }
         }
     }

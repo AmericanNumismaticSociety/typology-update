@@ -1,27 +1,7 @@
 <?php 
 
 /***** FUNCTIONS *****/
-function get_typeNumber($recordId, $project){
-    if ($project['name'] == 'ocre'){
-        $typeNumber = explode('.', $recordId)[3];
-    } elseif ($project['name'] == 'crro'){
-        $idPieces = explode('.', $recordId);
-        
-        if (isset($idPieces[4])) {
-            $typeNumber = $idPieces[2] . '.' . $idPieces[3] . '.' . $idPieces[4];
-        } elseif (isset($idPieces[3])) {
-            $typeNumber = $idPieces[2] . '.' . $idPieces[3];
-        } else {
-            $typeNumber = $idPieces[2];
-        }
-    } else {
-        $typeNumber = "Update get_typeNumber function";
-    }
-    
-    return $typeNumber;
-}
-
-function generate_nuds($row, $project, $obverses, $reverses){
+function generate_nuds($row, $project, $obverses, $reverses, $count){
     
     $uri_space = $project['uri_space'];
     
@@ -68,6 +48,15 @@ function generate_nuds($row, $project, $obverses, $reverses){
                 $doc->endElement();
                 $doc->writeElement('publicationStatus', 'approvedSubtype');
             } else {
+                //insert a sortID
+                $doc->startElement('otherRecordId');
+                    $doc->writeAttribute('localType', 'sortId');
+                    if (array_key_exists('sortId', $row) && strlen($row['sortId']) > 0){
+                        $doc->text($row['sortId']);
+                    } else {
+                        $doc->text(number_pad(intval($count), 4));
+                    }
+                $doc->endElement();  
                 $doc->writeElement('publicationStatus', 'approved');
             }
             
@@ -155,7 +144,7 @@ function generate_nuds($row, $project, $obverses, $reverses){
         //title
         $doc->startElement('title');
             $doc->writeAttribute('xml:lang', 'en');
-            $doc->text(get_ocre_title($recordId));
+            $doc->text(get_title($recordId, $row, $project));
         $doc->endElement();
         
         /***** TYPEDESC *****/
@@ -187,7 +176,7 @@ function generate_nuds($row, $project, $obverses, $reverses){
         }
         
         //sort dates
-        if (array_key_exists('From Date', $row) || array_key_exists('To Date', $row)){
+        if (array_key_exists('From Date', $row) && array_key_exists('To Date', $row)){
             if (strlen($row['From Date']) > 0 || strlen($row['To Date']) > 0){
                 if (($row['From Date'] == $row['To Date']) || (strlen($row['From Date']) > 0 && strlen($row['To Date']) == 0)){
                     if (is_numeric(trim($row['From Date']))){
@@ -195,6 +184,9 @@ function generate_nuds($row, $project, $obverses, $reverses){
                         $fromDate = intval(trim($row['From Date']));
                         $doc->startElement('date');
                             $doc->writeAttribute('standardDate', number_pad($fromDate, 4));
+                            if (array_key_exists('From Date Certainty', $row) && strlen($row['From Date Certainty']) > 0){
+                                $doc->writeAttribute('certainty', 'http://nomisma.org/id/' . $row['From Date Certainty']);
+                            }
                             $doc->text(get_date_textual($fromDate));
                         $doc->endElement();
                     }
@@ -207,10 +199,16 @@ function generate_nuds($row, $project, $obverses, $reverses){
                         $doc->startElement('dateRange');
                             $doc->startElement('fromDate');
                                 $doc->writeAttribute('standardDate', number_pad($fromDate, 4));
+                                if (array_key_exists('From Date Certainty', $row) && strlen($row['From Date Certainty']) > 0){
+                                    $doc->writeAttribute('certainty', 'http://nomisma.org/id/' . $row['From Date Certainty']);
+                                }
                                 $doc->text(get_date_textual($fromDate));
                             $doc->endElement();
                             $doc->startElement('toDate');
                                 $doc->writeAttribute('standardDate', number_pad($toDate, 4));
+                                if (array_key_exists('To Date Certainty', $row) && strlen($row['To Date Certainty']) > 0){
+                                    $doc->writeAttribute('certainty', 'http://nomisma.org/id/' . $row['To Date Certainty']);
+                                }
                                 $doc->text(get_date_textual($toDate));
                             $doc->endElement();
                         $doc->endElement();
@@ -380,7 +378,7 @@ function generate_nuds($row, $project, $obverses, $reverses){
         
         //geography
         //mint
-        if (array_key_exists('Mint URI', $row) || array_key_exists('Region URI', $row)){
+        if ((array_key_exists('Mint URI', $row) && strlen($row['Mint URI']) > 0) || (array_key_exists('Region URI', $row) && strlen($row['Region URI']) > 0)){
             $doc->startElement('geographic');
             if (array_key_exists('Mint URI', $row) && strlen($row['Mint URI']) > 0){
                 $vals = explode('|', $row['Mint URI']);
@@ -479,7 +477,7 @@ function generate_nuds($row, $project, $obverses, $reverses){
             //try single obverse symbol column first before looking for O: columns
             if (array_key_exists('Obverse Symbol', $row) && strlen($row['Obverse Symbol']) > 0){
                 $doc->startElement('symbol');
-                parse_symbol($doc, trim($row['Obverse Symbol']));
+                    parse_symbol($doc, trim($row['Obverse Symbol']));
                 $doc->endElement();
             } else {
                 //symbols
@@ -684,18 +682,38 @@ function generate_nuds($row, $project, $obverses, $reverses){
         $doc->endElement();
         
         /***** REFDESC *****/
-        //create references to previous volumes
-        
-        if (array_key_exists('Deprecated ID', $row) && strlen($row['Deprecated ID']) > 0){
-            $replaces = explode('|', $row['Deprecated ID']);
+        //create references to previous volumes        
+        if ((array_key_exists('Deprecated ID', $row) && strlen($row['Deprecated ID']) > 0) || (array_key_exists('Matching URI', $row) && strlen($row['Matching URI']) > 0)){
             $doc->startElement('refDesc');
-            foreach ($replaces as $deprecatedID){
-                $deprecatedID = trim($deprecatedID);
-                $doc->startElement('reference');
-                    $doc->writeAttribute('xlink:type', 'simple');
-                    $doc->writeAttribute('xlink:href', $uri_space . $deprecatedID);
-                    $doc->text(get_ocre_title($deprecatedID));
-                $doc->endElement();
+            
+            if (array_key_exists('Deprecated ID', $row) && strlen($row['Deprecated ID']) > 0){
+                $replaces = explode('|', $row['Deprecated ID']);
+               
+                foreach ($replaces as $deprecatedID){
+                    $deprecatedID = trim($deprecatedID);
+                    $doc->startElement('reference');
+                        $doc->writeAttribute('xlink:type', 'simple');
+                        $doc->writeAttribute('xlink:href', $uri_space . $deprecatedID);
+                        $doc->text(get_title($deprecatedID, $row, $project));
+                    $doc->endElement();
+                }                
+            }
+            
+            if (array_key_exists('Matching URI', $row) && strlen($row['Matching URI']) > 0){
+                $matches = explode('|', $row['Matching URI']);
+                
+                foreach ($matches as $uri){
+                    $uri = trim($uri);
+                    
+                    //get title via RDF
+                    $content = processUri($uri);
+                    
+                    $doc->startElement('reference');
+                        $doc->writeAttribute('xlink:type', 'simple');
+                        $doc->writeAttribute('xlink:href', $uri);
+                        $doc->text($content['label']);
+                    $doc->endElement();
+                }
             }
             $doc->endElement();
         }
@@ -933,7 +951,115 @@ function write_seg_tei ($doc, $seg, $rend, $parent){
     }
 }
 
-//parse the ID sequence to create a title
+//parse the recordId and construct the typeNumber
+function get_typeNumber($recordId, $project){
+    if ($project['name'] == 'ocre'){
+        $typeNumber = explode('.', $recordId)[3];
+    } elseif ($project['name'] == 'crro') {
+        $typeNumber = str_replace('.', '/', str_replace('rrc-', '', $recordId));
+    } elseif ($project['name'] == 'pco'){
+        $typeNumber = explode('.', $recordId)[2];
+    } elseif ($project['name'] == 'sco'){
+        $typeNumber = str_replace('sc.1.', '', $recordId);
+    } elseif ($project['name'] == 'bigr'){
+        $idPieces = explode('.', $recordId);
+        
+        if (isset($idPieces[4])) {
+            $typeNumber = $idPieces[2] . '.' . $idPieces[3] . '.' . $idPieces[4];
+        } elseif (isset($idPieces[3])) {
+            $typeNumber = $idPieces[2] . '.' . $idPieces[3];
+        } else {
+            $typeNumber = $idPieces[2];
+        }
+    } else {
+        $typeNumber = "Update get_typeNumber function";
+    }
+    
+    return $typeNumber;
+}
+
+//function for automatically generating the title based on the recordId
+function get_title($recordId, $row, $project){
+    
+    //if there is a title column, use that instead    
+    if (array_key_exists('Title', $row)){
+        $title = $row['Title'];    
+    } else {
+        if ($project['name'] == 'ocre'){
+            $title = get_ocre_title($recordId);
+        } elseif ($project['name'] == 'crro'){
+            $title = str_replace('.', '/', str_replace('rrc-', 'RRC ', $recordId));
+        } elseif ($project['name'] == 'pco'){
+            $pieces = explode('.', $recordId);
+            switch ($pieces[1]){
+                case '1_1':
+                    $vol = 'Vol. I, Part 1';
+                    break;
+                case '1_2':
+                    $vol = 'Vol. I, Part II';
+                    break;
+            }
+            
+            $title = 'Coins of the Ptolemaic Empire ' . $vol . ', no. '. $pieces[2];
+        } elseif ($project['name'] == 'bigr'){
+            $name = '';
+            
+            $pieces = explode('.', $recordId);
+            
+            if (isset($pieces[4])) {
+                $typeNumber = $pieces[2] . '.' . $pieces[3] . '.' . $pieces[4];
+            } elseif (isset($pieces[3])) {
+                $typeNumber = $pieces[2] . '.' . $pieces[3];
+            } else {
+                $typeNumber = $pieces[2];
+            }
+            
+            $authority = $pieces[1];
+            
+            switch ($authority){
+                case 'diodotus_i_ii':
+                    $name = 'Diodotus I or Diodotus II';
+                    break;
+                case 'heliocles_laodice':
+                    $name = 'Heliocles and Laodice';
+                    break;
+                case 'agathocleia_strato_i':
+                    $name = 'Strato I and Agathocleia';
+                    break;
+                case 'lysias_antialcidas':
+                    $name = 'Lysias and Antialcidas';
+                    break;
+                case 'hermaeus_calliope':
+                    $name = 'Hermaeus and Calliope';
+                    break;
+                case 'strato_ii_iii':
+                    $name = 'Strato II and Strato III';
+                    break;
+                default:
+                    $namePieces = explode('_', $authority);
+                    $newName = array();
+                    
+                    foreach ($namePieces as $frag){
+                        if (preg_match('/^i/', $frag)){
+                            $newName[] = str_replace('i', 'I', $frag);
+                        } else {
+                            $newName[] = ucfirst($frag);
+                        }
+                    }
+                    
+                    $name = implode(' ', $newName);
+            }
+            
+            $title = "Bactrian and Indo-Greek Coinage {$name} {$typeNumber}";
+        } else {
+            $title = "Update get_title function";
+        }
+    }
+    
+    return $title;
+}
+
+//parse the ID sequence to create a title for OCRE specifically
 function get_ocre_title($recordId){
     $pieces = explode('.', $recordId);
     switch ($pieces[1]) {
@@ -1540,6 +1666,9 @@ function processUri($uri){
             $content['element'] = 'shape';
             $content['label'] = $label;
             break;
+        case 'nmo:TypeSeriesItem':
+            $content['element'] = 'typeSeries';
+            $content['label'] = $label;
         case 'rdac:Family':
             $content['element'] = 'famname';
             $content['label'] = $label;
