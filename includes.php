@@ -41,7 +41,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
             $doc->endElement();
             
             //hierarchy
-            if (strlen($row['Parent ID']) > 0){
+            if (array_key_exists('Parent ID', $row) && strlen($row['Parent ID']) > 0){
                 $doc->startElement('otherRecordId');
                     $doc->writeAttribute('semantic', 'skos:broader');
                     $doc->text(trim($row['Parent ID']));
@@ -144,7 +144,11 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
         //title
         $doc->startElement('title');
             $doc->writeAttribute('xml:lang', 'en');
-            $doc->text(get_title($recordId, $row, $project));
+            if (array_key_exists('Title', $row)){
+                $doc->text($row['Title']);
+            } else {
+                $doc->text(get_title($recordId, $project));
+            }            
         $doc->endElement();
         
         /***** TYPEDESC *****/
@@ -449,10 +453,54 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                     //$doc->writeAttribute('xml:lang', 'la');
                     $doc->text($legend);
                 $doc->endElement();
+                
+                unset($legend);
+            } else {
+                //otherwise, iterate through columns to find any Reverse Legend Column with a script code (ISO 15924) via regex
+                $legends = array();
+                
+                foreach ($row as $k=>$v){
+                    if (preg_match('/^Obverse Legend\s\(([A-Z][a-z]{3})\)$/', $k, $matches)){
+                        $legend = trim($v);
+                        
+                        if (strlen($legend) > 0) {
+                            $legends[] = array('scriptCode'=>$matches[1], 'value'=>$legend);
+                        }
+                    }
+                }
+                
+                if (count($legends) > 0){
+                    $doc->startElement('legend');
+                        if (count($legends) == 1) {
+                            $lang = parse_scriptCode($legends[0]['scriptCode']);
+                                $doc->writeAttribute('scriptCode', $lang['scriptCode']);
+                                $doc->writeAttribute('xml:lang', $lang['lang']);
+                                $doc->text($legends[0]['value']);
+                        } else {
+                            $doc->startElement('tei:div');
+                                $doc->writeAttribute('type', 'edition');
+                            
+                                foreach ($legends as $legend){
+                                    $lang = parse_scriptCode($legend['scriptCode']);
+                                    
+                                    //the EpiDoc guidelines concatenate the language code with the script code with a hyphen separator, https://epidoc.stoa.org/gl/latest/trans-foreigntext.html
+                                    $doc->startElement('tei:div');
+                                        $doc->writeAttribute('type', 'textpart');
+                                        $doc->writeAttribute('xml:lang', $lang['lang'] . '-' . $lang['scriptCode']);
+                                        $doc->startElement('tei:ab');
+                                            $doc->text($legend['value']);
+                                        $doc->endElement();
+                                    $doc->endElement();
+                                }
+                            $doc->endElement();
+                        }
+                    $doc->endElement();
+                }
+                
+                unset($legends);
             }
             
-            //multilingual type descriptions
-            
+            //multilingual type descriptions            
             if (array_key_exists('Obverse Type Code', $row) && strlen($row['Obverse Type Code']) > 0) {        
                 $key = $row['Obverse Type Code'];
                 $doc->startElement('type');
@@ -565,15 +613,58 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
         if (array_key_exists('Reverse Type Code', $row) || array_key_exists('Reverse Legend', $row) || array_key_exists('Reverse Portrait URI', $row) || array_key_exists('Reverse Deity URI', $row)) {
             $doc->startElement('reverse');
             
-            //legend
+            //if the legend is encoded in a single column, then process that
             if (array_key_exists('Reverse Legend', $row) && strlen(trim($row['Reverse Legend'])) > 0){
                 $legend = trim($row['Reverse Legend']);
                 
                 $doc->startElement('legend');
-                    //$doc->writeAttribute('scriptCode', 'Latn');
-                    //$doc->writeAttribute('xml:lang', 'la');
                     $doc->text($legend);
                 $doc->endElement();
+                
+                unset($legend);
+            } else {
+                //otherwise, iterate through columns to find any Reverse Legend Column with a script code (ISO 15924) via regex                     
+                $legends = array();
+                
+                foreach ($row as $k=>$v){
+                    if (preg_match('/^Reverse Legend\s\(([A-Z][a-z]{3})\)$/', $k, $matches)){
+                        $legend = trim($v);
+                        
+                        if (strlen($legend) > 0) {
+                            $legends[] = array('scriptCode'=>$matches[1], 'value'=>$legend);
+                        }                        
+                    }
+                }
+                
+                if (count($legends) > 0){
+                    $doc->startElement('legend');
+                        if (count($legends) == 1) {
+                            $lang = parse_scriptCode($legends[0]['scriptCode']);
+                            $doc->writeAttribute('scriptCode', $lang['scriptCode']);
+                            $doc->writeAttribute('xml:lang', $lang['lang']);
+                            $doc->text($legends[0]['value']);
+                        } else {
+                            $doc->startElement('tei:div');                            
+                                $doc->writeAttribute('type', 'edition');
+                                
+                                foreach ($legends as $legend){
+                                    $lang = parse_scriptCode($legend['scriptCode']);
+                                    
+                                    //the EpiDoc guidelines concatenate the language code with the script code with a hyphen separator, https://epidoc.stoa.org/gl/latest/trans-foreigntext.html                                    
+                                    $doc->startElement('tei:div');
+                                        $doc->writeAttribute('type', 'textpart');
+                                        $doc->writeAttribute('xml:lang', $lang['lang'] . '-' . $lang['scriptCode']);
+                                        $doc->startElement('tei:ab');
+                                            $doc->text($legend['value']);
+                                        $doc->endElement();
+                                    $doc->endElement();
+                                }
+                            $doc->endElement();
+                        }
+                    $doc->endElement();
+                }
+                
+                unset($legends);
             }
             
             //multilingual type descriptions
@@ -597,7 +688,6 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                     }
                 $doc->endElement();    
             }
-
             
             //portrait
             if (array_key_exists('Reverse Portrait URI', $row) && strlen($row['Reverse Portrait URI']) > 0){
@@ -694,7 +784,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                     $doc->startElement('reference');
                         $doc->writeAttribute('xlink:type', 'simple');
                         $doc->writeAttribute('xlink:href', $uri_space . $deprecatedID);
-                        $doc->text(get_title($deprecatedID, $row, $project));
+                        $doc->text(get_title($deprecatedID, $project));
                     $doc->endElement();
                 }                
             }
@@ -779,8 +869,8 @@ function parse_symbol($doc, $text){
     $doc->writeAttribute('type', 'edition');
     
     //split into two pieces
-    if (strpos($text, ' above ') !== FALSE){
-        $positions = explode(' above ', $text);
+    if (strpos($text, '///') !== FALSE){
+        $positions = explode('///', $text);
         
         foreach ($positions as $k=>$pos){
             $pos = trim($pos);
@@ -799,12 +889,12 @@ function parse_symbol($doc, $text){
     } elseif ($text == '[no monogram]') {
         //semantically encode intentional blank space for subtypes
         $doc->startElement('tei:ab');
-        $doc->writeElement('tei:space');
+            $doc->writeElement('tei:space');
         $doc->endElement();
     } elseif ($text == '[unclear]') {
         //semantically encode intentional blank space for subtypes
         $doc->startElement('tei:ab');
-        $doc->writeElement('tei:unclear');
+            $doc->writeElement('tei:unclear');
         $doc->endElement();
     } else {
         parse_split($doc, $text, 1);
@@ -840,11 +930,11 @@ function parse_horizontal ($doc, $text, $level){
             
             if ($level == 1){
                 $doc->startElement('tei:ab');
-                parse_conditional($doc, $seg, true);
+                    parse_conditional($doc, $seg, true);
                 $doc->endElement();
             } else {
                 $doc->startElement('tei:seg');
-                parse_conditional($doc, $seg, true);
+                    parse_conditional($doc, $seg, true);
                 $doc->endElement();
             }
         }
@@ -891,23 +981,24 @@ function write_seg_tei ($doc, $seg, $rend, $parent){
         }
         //insert a single monogram into an ab, if applicable
         $doc->startElement('tei:am');
-        $doc->startElement('tei:g');
-        $doc->writeAttribute('type', 'nmo:Monogram');
-        if (isset($rend)){
-            if ($rend == '?'){
-                $doc->writeAttribute('rend', 'unclear');
-            } else {
-                $doc->writeAttribute('rend', $rend);
-            }
-        }
-        
-        //validate monogram URI before inserting the ref attribute
-        $content = processUri($uri);
-        
-        $doc->writeAttribute('ref', $uri);
-        $doc->text($content['label']);
-        
-        $doc->endElement();
+            $doc->startElement('tei:g');
+                $doc->writeAttribute('type', 'nmo:Monogram');
+                if (isset($rend)){
+                    if ($rend == '?'){
+                        $doc->writeAttribute('rend', 'unclear');
+                    } else {
+                        $doc->writeAttribute('rend', $rend);
+                    }
+                }
+                
+                //validate monogram URI before inserting the ref attribute
+                $content = processUri($uri);
+                
+                $doc->writeAttribute('ref', $uri);
+                $doc->text($content['label']);
+            //end tei:g
+            $doc->endElement();
+        //end tei:am
         $doc->endElement();
         
         if ($parent == false){
@@ -920,12 +1011,12 @@ function write_seg_tei ($doc, $seg, $rend, $parent){
             if (isset($rend)){
                 if ($rend == '?'){
                     $doc->startElement('tei:seg');
-                    $doc->writeElement('tei:unclear', $seg);
+                        $doc->writeElement('tei:unclear', $seg);
                     $doc->endElement();
                 } else {
                     $doc->startElement('tei:seg');
-                    $doc->writeAttribute('rend', $rend);
-                    $doc->text($seg);
+                        $doc->writeAttribute('rend', $rend);
+                        $doc->text($seg);
                     $doc->endElement();
                 }
             } else {
@@ -936,12 +1027,12 @@ function write_seg_tei ($doc, $seg, $rend, $parent){
             if (isset($rend)){
                 if ($rend == '?'){
                     $doc->startElement('tei:ab');
-                    $doc->writeElement('tei:unclear', $seg);
+                        $doc->writeElement('tei:unclear', $seg);
                     $doc->endElement();
                 } else {
                     $doc->startElement('tei:ab');
-                    $doc->writeAttribute('rend', $rend);
-                    $doc->text($seg);
+                        $doc->writeAttribute('rend', $rend);
+                        $doc->text($seg);
                     $doc->endElement();
                 }
             } else {
@@ -951,12 +1042,34 @@ function write_seg_tei ($doc, $seg, $rend, $parent){
     }
 }
 
+//result the 3-letter ISO code for language based on the script code embedded in the legend column
+function parse_scriptCode($scriptCode){
+        
+    switch ($scriptCode){
+        case 'Grek':
+            $lang = 'grc';
+            break;
+        case 'Latn': 
+            $lang = 'lat';
+            break;
+        case 'Phnx':
+            $lang = 'phn';
+            break;
+        default:
+            $lang = 'null';
+    }
+    
+    return array('scriptCode'=>$scriptCode, 'lang'=>$lang);
+}
+
 //parse the recordId and construct the typeNumber
 function get_typeNumber($recordId, $project){
     if ($project['name'] == 'ocre'){
         $typeNumber = explode('.', $recordId)[3];
     } elseif ($project['name'] == 'crro') {
         $typeNumber = str_replace('.', '/', str_replace('rrc-', '', $recordId));
+    } elseif ($project['name'] == 'agco') {
+        $typeNumber = explode('.', $recordId)[2];
     } elseif ($project['name'] == 'pco'){
         $typeNumber = explode('.', $recordId)[2];
     } elseif ($project['name'] == 'sco'){
@@ -972,88 +1085,96 @@ function get_typeNumber($recordId, $project){
             $typeNumber = $idPieces[2];
         }
     } else {
-        $typeNumber = "Update get_typeNumber function";
+        $typeNumber = "Update get_typeNumber() function";
     }
     
     return $typeNumber;
 }
 
 //function for automatically generating the title based on the recordId
-function get_title($recordId, $row, $project){
+function get_title($recordId, $project){
     
-    //if there is a title column, use that instead    
-    if (array_key_exists('Title', $row)){
-        $title = $row['Title'];    
-    } else {
-        if ($project['name'] == 'ocre'){
-            $title = get_ocre_title($recordId);
-        } elseif ($project['name'] == 'crro'){
-            $title = str_replace('.', '/', str_replace('rrc-', 'RRC ', $recordId));
-        } elseif ($project['name'] == 'pco'){
-            $pieces = explode('.', $recordId);
-            switch ($pieces[1]){
-                case '1_1':
-                    $vol = 'Vol. I, Part 1';
-                    break;
-                case '1_2':
-                    $vol = 'Vol. I, Part II';
-                    break;
-            }
-            
-            $title = 'Coins of the Ptolemaic Empire ' . $vol . ', no. '. $pieces[2];
-        } elseif ($project['name'] == 'bigr'){
-            $name = '';
-            
-            $pieces = explode('.', $recordId);
-            
-            if (isset($pieces[4])) {
-                $typeNumber = $pieces[2] . '.' . $pieces[3] . '.' . $pieces[4];
-            } elseif (isset($pieces[3])) {
-                $typeNumber = $pieces[2] . '.' . $pieces[3];
-            } else {
-                $typeNumber = $pieces[2];
-            }
-            
-            $authority = $pieces[1];
-            
-            switch ($authority){
-                case 'diodotus_i_ii':
-                    $name = 'Diodotus I or Diodotus II';
-                    break;
-                case 'heliocles_laodice':
-                    $name = 'Heliocles and Laodice';
-                    break;
-                case 'agathocleia_strato_i':
-                    $name = 'Strato I and Agathocleia';
-                    break;
-                case 'lysias_antialcidas':
-                    $name = 'Lysias and Antialcidas';
-                    break;
-                case 'hermaeus_calliope':
-                    $name = 'Hermaeus and Calliope';
-                    break;
-                case 'strato_ii_iii':
-                    $name = 'Strato II and Strato III';
-                    break;
-                default:
-                    $namePieces = explode('_', $authority);
-                    $newName = array();
-                    
-                    foreach ($namePieces as $frag){
-                        if (preg_match('/^i/', $frag)){
-                            $newName[] = str_replace('i', 'I', $frag);
-                        } else {
-                            $newName[] = ucfirst($frag);
-                        }
-                    }
-                    
-                    $name = implode(' ', $newName);
-            }
-            
-            $title = "Bactrian and Indo-Greek Coinage {$name} {$typeNumber}";
-        } else {
-            $title = "Update get_title function";
+    if ($project['name'] == 'ocre'){
+        //parsing of the OCRE title is more complex and is handled by a standalone function
+        $title = get_ocre_title($recordId);
+    } elseif ($project['name'] == 'crro'){
+        $title = str_replace('.', '/', str_replace('rrc-', 'RRC ', $recordId));
+    } elseif ($project['name'] == 'agco') {
+        $title = 'Newell Demetrius Poliorcetes, no. ' . explode('.', $recordId)[2];
+    } elseif ($project['name'] == 'pco'){
+        $pieces = explode('.', $recordId);
+        switch ($pieces[1]){
+            case '1_1':
+                $vol = 'Vol. I, Part 1';
+                break;
+            case '1_2':
+                $vol = 'Vol. I, Part II';
+                break;
         }
+        
+        $title = 'Coins of the Ptolemaic Empire ' . $vol . ', no. '. $pieces[2];
+    } elseif ($project['name'] == 'sco') {
+      $pieces = explode('.', $recordId);
+      
+      if ((int) $pieces[2] >= 1296) {
+          $part = '2';
+      } else {
+          $part = '1';
+      }
+      
+      $title = 'Seleucid Coins (part ' . $part . ') ' . str_replace('sc.1.', '', $recordId);
+    } elseif ($project['name'] == 'bigr'){
+        $name = '';
+        
+        $pieces = explode('.', $recordId);
+        
+        if (isset($pieces[4])) {
+            $typeNumber = $pieces[2] . '.' . $pieces[3] . '.' . $pieces[4];
+        } elseif (isset($pieces[3])) {
+            $typeNumber = $pieces[2] . '.' . $pieces[3];
+        } else {
+            $typeNumber = $pieces[2];
+        }
+        
+        $authority = $pieces[1];
+        
+        switch ($authority){
+            case 'diodotus_i_ii':
+                $name = 'Diodotus I or Diodotus II';
+                break;
+            case 'heliocles_laodice':
+                $name = 'Heliocles and Laodice';
+                break;
+            case 'agathocleia_strato_i':
+                $name = 'Strato I and Agathocleia';
+                break;
+            case 'lysias_antialcidas':
+                $name = 'Lysias and Antialcidas';
+                break;
+            case 'hermaeus_calliope':
+                $name = 'Hermaeus and Calliope';
+                break;
+            case 'strato_ii_iii':
+                $name = 'Strato II and Strato III';
+                break;
+            default:
+                $namePieces = explode('_', $authority);
+                $newName = array();
+                
+                foreach ($namePieces as $frag){
+                    if (preg_match('/^i/', $frag)){
+                        $newName[] = str_replace('i', 'I', $frag);
+                    } else {
+                        $newName[] = ucfirst($frag);
+                    }
+                }
+                
+                $name = implode(' ', $newName);
+        }
+        
+        $title = "Bactrian and Indo-Greek Coinage {$name} {$typeNumber}";
+    } else {
+        $title = "Update get_title() function";
     }
     
     return $title;
