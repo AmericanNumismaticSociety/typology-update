@@ -141,7 +141,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
         //start descMeta
         $doc->startElement('descMeta');
         
-        //title
+        /***** TITLE *****/
         $doc->startElement('title');
             $doc->writeAttribute('xml:lang', 'en');
             if (array_key_exists('Title', $row)){
@@ -150,6 +150,28 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                 $doc->text(get_title($recordId, $project));
             }            
         $doc->endElement();
+        
+        /***** NOTES *****/
+        //look for any column where the first four letters begin with lower-case 'note'
+        $hasNotes = false;
+        foreach ($row as $k=>$v){
+            if (substr(strtolower($k), 0, 4) == 'note'){
+                $hasNotes = true;
+            }
+        }
+        
+        if ($hasNotes == true){
+            $doc->startElement('noteSet');
+                foreach ($row as $k=>$v){
+                    if (substr(strtolower($k), 0, 4) == 'note'){
+                        $doc->startElement('note');
+                            $doc->writeAttribute('xml:lang', 'en');
+                            $doc->text(trim($v));
+                        $doc->endElement();
+                    }
+                }
+            $doc->endElement();
+        }
         
         /***** TYPEDESC *****/
         $doc->startElement('typeDesc');
@@ -168,7 +190,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                     $content = processUri($uri);
                 }
                 
-                $doc->startElement($content['element']);
+                $doc->startElement('objectType');
                     $doc->writeAttribute('xlink:type', 'simple');
                     $doc->writeAttribute('xlink:href', $uri);
                     if($uncertainty == true){
@@ -181,45 +203,62 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
         
         //sort dates
         if (array_key_exists('From Date', $row) && array_key_exists('To Date', $row)){
-            if (strlen($row['From Date']) > 0 || strlen($row['To Date']) > 0){
-                if (($row['From Date'] == $row['To Date']) || (strlen($row['From Date']) > 0 && strlen($row['To Date']) == 0)){
-                    if (is_numeric(trim($row['From Date']))){
-                        
+            
+            //evaluate textual "fuzzy dates" first
+            if (array_key_exists('Textual Date', $row) && strlen($row['Textual Date']) > 0){
+                $doc->startElement('date');
+                    if (strlen($row['From Date']) > 0) {
                         $fromDate = intval(trim($row['From Date']));
-                        $doc->startElement('date');
-                            $doc->writeAttribute('standardDate', number_pad($fromDate, 4));
-                            if (array_key_exists('From Date Certainty', $row) && strlen($row['From Date Certainty']) > 0){
-                                $doc->writeAttribute('certainty', 'http://nomisma.org/id/' . $row['From Date Certainty']);
-                            }
-                            $doc->text(get_date_textual($fromDate));
-                        $doc->endElement();
+                        $doc->writeAttribute('notBefore', number_pad($fromDate, 4));
                     }
-                } else {
-                    $fromDate = intval(trim($row['From Date']));
-                    $toDate= intval(trim($row['To Date']));
-                    
-                    //only write date if both are integers
-                    if (is_int($fromDate) && is_int($toDate)){
-                        $doc->startElement('dateRange');
-                            $doc->startElement('fromDate');
+                    if (strlen($row['To Date']) > 0){
+                        $toDate = intval(trim($row['To Date']));
+                        $doc->writeAttribute('notAfter', number_pad($toDate, 4));
+                    }
+                    $doc->text(trim($row['Textual Date']));
+                $doc->endElement();
+                
+            } else {
+                //otherwise evaluate  just the integer values for dates
+                if (strlen($row['From Date']) > 0 || strlen($row['To Date']) > 0){
+                    if (($row['From Date'] == $row['To Date']) || (strlen($row['From Date']) > 0 && strlen($row['To Date']) == 0)){
+                        if (is_numeric(trim($row['From Date']))){
+                            
+                            $fromDate = intval(trim($row['From Date']));
+                            $doc->startElement('date');
                                 $doc->writeAttribute('standardDate', number_pad($fromDate, 4));
                                 if (array_key_exists('From Date Certainty', $row) && strlen($row['From Date Certainty']) > 0){
                                     $doc->writeAttribute('certainty', 'http://nomisma.org/id/' . $row['From Date Certainty']);
                                 }
                                 $doc->text(get_date_textual($fromDate));
                             $doc->endElement();
-                            $doc->startElement('toDate');
-                                $doc->writeAttribute('standardDate', number_pad($toDate, 4));
-                                if (array_key_exists('To Date Certainty', $row) && strlen($row['To Date Certainty']) > 0){
-                                    $doc->writeAttribute('certainty', 'http://nomisma.org/id/' . $row['To Date Certainty']);
-                                }
-                                $doc->text(get_date_textual($toDate));
+                        }
+                    } else {
+                        $fromDate = intval(trim($row['From Date']));
+                        $toDate= intval(trim($row['To Date']));
+                        
+                        //only write date if both are integers
+                        if (is_int($fromDate) && is_int($toDate)){
+                            $doc->startElement('dateRange');
+                                $doc->startElement('fromDate');
+                                    $doc->writeAttribute('standardDate', number_pad($fromDate, 4));
+                                    if (array_key_exists('From Date Certainty', $row) && strlen($row['From Date Certainty']) > 0){
+                                        $doc->writeAttribute('certainty', 'http://nomisma.org/id/' . $row['From Date Certainty']);
+                                    }
+                                    $doc->text(get_date_textual($fromDate));
+                                $doc->endElement();
+                                $doc->startElement('toDate');
+                                    $doc->writeAttribute('standardDate', number_pad($toDate, 4));
+                                    if (array_key_exists('To Date Certainty', $row) && strlen($row['To Date Certainty']) > 0){
+                                        $doc->writeAttribute('certainty', 'http://nomisma.org/id/' . $row['To Date Certainty']);
+                                    }
+                                    $doc->text(get_date_textual($toDate));
+                                $doc->endElement();
                             $doc->endElement();
-                        $doc->endElement();
+                        }
                     }
-                }
+                }            
             }
-        
         }
         
         if (array_key_exists('Denomination URI', $row) && strlen($row['Denomination URI']) > 0){
@@ -235,7 +274,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                     $content = processUri($uri);
                 }
                 
-                $doc->startElement($content['element']);
+                $doc->startElement('denomination');
                     $doc->writeAttribute('xlink:type', 'simple');
                     $doc->writeAttribute('xlink:href', $uri);
                     if($uncertainty == true){
@@ -259,7 +298,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                     $content = processUri($uri);
                 }
                 
-                $doc->startElement($content['element']);
+                $doc->startElement('manufacture');
                     $doc->writeAttribute('xlink:type', 'simple');
                     $doc->writeAttribute('xlink:href', $uri);
                     if($uncertainty == true){
@@ -284,7 +323,31 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                     $content = processUri($uri);
                 }
                 
-                $doc->startElement($content['element']);
+                $doc->startElement('material');
+                    $doc->writeAttribute('xlink:type', 'simple');
+                    $doc->writeAttribute('xlink:href', $uri);
+                    if($uncertainty == true){
+                        $doc->writeAttribute('certainty', 'http://nomisma.org/id/uncertain_value');
+                    }
+                    $doc->text($content['label']);
+                $doc->endElement();
+            }
+        }
+        
+        if (array_key_exists('Shape URI', $row) && strlen($row['Shape URI']) > 0){
+            $vals = explode('|', $row['Shape URI']);
+            foreach ($vals as $val){
+                if (substr($val, -1) == '?'){
+                    $uri = substr($val, 0, -1);
+                    $uncertainty = true;
+                    $content = processUri($uri);
+                } else {
+                    $uri =  $val;
+                    $uncertainty = false;
+                    $content = processUri($uri);
+                }
+                
+                $doc->startElement('shape');
                     $doc->writeAttribute('xlink:type', 'simple');
                     $doc->writeAttribute('xlink:href', $uri);
                     if($uncertainty == true){
@@ -296,9 +359,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
         }
         
         //authority
-        
-        
-        if (array_key_exists('Authority URI', $row) || array_key_exists('Stated Authority URI', $row) || array_key_exists('Issuer URI', $row)){
+        if (array_key_exists('Authority URI', $row) || array_key_exists('Stated Authority URI', $row) || array_key_exists('Issuer URI', $row) || array_key_exists('Authenticity URI', $row)){
             $doc->startElement('authority');
             if (array_key_exists('Authority URI', $row) && strlen($row['Authority URI']) > 0){
                 $vals = explode('|', $row['Authority URI']);
@@ -377,6 +438,30 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                     $doc->endElement();
                 }
             }
+            
+            if (array_key_exists('Authenticity URI', $row) && strlen($row['Authenticity URI']) > 0){
+                $vals = explode('|', $row['Authenticity URI']);
+                foreach ($vals as $val){
+                    if (substr($val, -1) == '?'){
+                        $uri = substr($val, 0, -1);
+                        $uncertainty = true;
+                        $content = processUri($uri);
+                    } else {
+                        $uri =  $val;
+                        $uncertainty = false;
+                        $content = processUri($uri);
+                    }
+                    
+                    $doc->startElement('authenticity');
+                        $doc->writeAttribute('xlink:type', 'simple');
+                        $doc->writeAttribute('xlink:href', $uri);
+                        if($uncertainty == true){
+                            $doc->writeAttribute('certainty', 'http://nomisma.org/id/uncertain_value');
+                        }
+                        $doc->text($content['label']);
+                    $doc->endElement();
+                }
+            }
             $doc->endElement();
         }
         
@@ -445,60 +530,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
             $doc->startElement('obverse');
             
             //legend
-            if (array_key_exists('Obverse Legend', $row) && strlen(trim($row['Obverse Legend'])) > 0){
-                $legend = trim($row['Obverse Legend']);
-                
-                $doc->startElement('legend');
-                    //$doc->writeAttribute('scriptCode', 'Latn');
-                    //$doc->writeAttribute('xml:lang', 'la');
-                    $doc->text($legend);
-                $doc->endElement();
-                
-                unset($legend);
-            } else {
-                //otherwise, iterate through columns to find any Reverse Legend Column with a script code (ISO 15924) via regex
-                $legends = array();
-                
-                foreach ($row as $k=>$v){
-                    if (preg_match('/^Obverse Legend\s\(([A-Z][a-z]{3})\)$/', $k, $matches)){
-                        $legend = trim($v);
-                        
-                        if (strlen($legend) > 0) {
-                            $legends[] = array('scriptCode'=>$matches[1], 'value'=>$legend);
-                        }
-                    }
-                }
-                
-                if (count($legends) > 0){
-                    $doc->startElement('legend');
-                        if (count($legends) == 1) {
-                            $lang = parse_scriptCode($legends[0]['scriptCode']);
-                                $doc->writeAttribute('scriptCode', $lang['scriptCode']);
-                                $doc->writeAttribute('xml:lang', $lang['lang']);
-                                $doc->text($legends[0]['value']);
-                        } else {
-                            $doc->startElement('tei:div');
-                                $doc->writeAttribute('type', 'edition');
-                            
-                                foreach ($legends as $legend){
-                                    $lang = parse_scriptCode($legend['scriptCode']);
-                                    
-                                    //the EpiDoc guidelines concatenate the language code with the script code with a hyphen separator, https://epidoc.stoa.org/gl/latest/trans-foreigntext.html
-                                    $doc->startElement('tei:div');
-                                        $doc->writeAttribute('type', 'textpart');
-                                        $doc->writeAttribute('xml:lang', $lang['lang'] . '-' . $lang['scriptCode']);
-                                        $doc->startElement('tei:ab');
-                                            $doc->text($legend['value']);
-                                        $doc->endElement();
-                                    $doc->endElement();
-                                }
-                            $doc->endElement();
-                        }
-                    $doc->endElement();
-                }
-                
-                unset($legends);
-            }
+            render_legend($doc, $row, 'Obverse');
             
             //multilingual type descriptions            
             if (array_key_exists('Obverse Type Code', $row) && strlen($row['Obverse Type Code']) > 0) {        
@@ -613,59 +645,8 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
         if (array_key_exists('Reverse Type Code', $row) || array_key_exists('Reverse Legend', $row) || array_key_exists('Reverse Portrait URI', $row) || array_key_exists('Reverse Deity URI', $row)) {
             $doc->startElement('reverse');
             
-            //if the legend is encoded in a single column, then process that
-            if (array_key_exists('Reverse Legend', $row) && strlen(trim($row['Reverse Legend'])) > 0){
-                $legend = trim($row['Reverse Legend']);
-                
-                $doc->startElement('legend');
-                    $doc->text($legend);
-                $doc->endElement();
-                
-                unset($legend);
-            } else {
-                //otherwise, iterate through columns to find any Reverse Legend Column with a script code (ISO 15924) via regex                     
-                $legends = array();
-                
-                foreach ($row as $k=>$v){
-                    if (preg_match('/^Reverse Legend\s\(([A-Z][a-z]{3})\)$/', $k, $matches)){
-                        $legend = trim($v);
-                        
-                        if (strlen($legend) > 0) {
-                            $legends[] = array('scriptCode'=>$matches[1], 'value'=>$legend);
-                        }                        
-                    }
-                }
-                
-                if (count($legends) > 0){
-                    $doc->startElement('legend');
-                        if (count($legends) == 1) {
-                            $lang = parse_scriptCode($legends[0]['scriptCode']);
-                            $doc->writeAttribute('scriptCode', $lang['scriptCode']);
-                            $doc->writeAttribute('xml:lang', $lang['lang']);
-                            $doc->text($legends[0]['value']);
-                        } else {
-                            $doc->startElement('tei:div');                            
-                                $doc->writeAttribute('type', 'edition');
-                                
-                                foreach ($legends as $legend){
-                                    $lang = parse_scriptCode($legend['scriptCode']);
-                                    
-                                    //the EpiDoc guidelines concatenate the language code with the script code with a hyphen separator, https://epidoc.stoa.org/gl/latest/trans-foreigntext.html                                    
-                                    $doc->startElement('tei:div');
-                                        $doc->writeAttribute('type', 'textpart');
-                                        $doc->writeAttribute('xml:lang', $lang['lang'] . '-' . $lang['scriptCode']);
-                                        $doc->startElement('tei:ab');
-                                            $doc->text($legend['value']);
-                                        $doc->endElement();
-                                    $doc->endElement();
-                                }
-                            $doc->endElement();
-                        }
-                    $doc->endElement();
-                }
-                
-                unset($legends);
-            }
+            //legend
+            render_legend($doc, $row, 'Reverse');
             
             //multilingual type descriptions
             if (array_key_exists('Reverse Type Code', $row) && strlen($row['Reverse Type Code']) > 0) {
@@ -975,6 +956,8 @@ function parse_seg($doc, $seg, $parent){
 function write_seg_tei ($doc, $seg, $rend, $parent){    
     if (preg_match('/^(https?:\/\/.*)/', $seg, $matches)){
         $uri = trim($matches[1]);
+        $content = processUri($uri);
+        
         
         if ($parent == false){
             $doc->startElement('tei:ab');
@@ -982,7 +965,7 @@ function write_seg_tei ($doc, $seg, $rend, $parent){
         //insert a single monogram into an ab, if applicable
         $doc->startElement('tei:am');
             $doc->startElement('tei:g');
-                $doc->writeAttribute('type', 'nmo:Monogram');
+                $doc->writeAttribute('type', $content['type']);
                 if (isset($rend)){
                     if ($rend == '?'){
                         $doc->writeAttribute('rend', 'unclear');
@@ -991,8 +974,6 @@ function write_seg_tei ($doc, $seg, $rend, $parent){
                     }
                 }
                 
-                //validate monogram URI before inserting the ref attribute
-                $content = processUri($uri);
                 
                 $doc->writeAttribute('ref', $uri);
                 $doc->text($content['label']);
@@ -1060,6 +1041,100 @@ function parse_scriptCode($scriptCode){
     }
     
     return array('scriptCode'=>$scriptCode, 'lang'=>$lang);
+}
+
+function render_legend($doc, $row, $side){
+    //if the legend is encoded in a single column, then process that
+    if (array_key_exists($side . ' Legend', $row) && strlen(trim($row[$side . ' Legend'])) > 0){
+        $legend = trim($row[$side . ' Legend']);
+        
+        $doc->startElement('legend');
+        if ((array_key_exists($side . ' Legend Orientation', $row) && strlen($row[$side . ' Legend Orientation']) > 0) || (array_key_exists($side . ' Legend Tranliteration', $row) && strlen($row[$side . ' Legend Tranliteration']) > 0)){
+            //edition
+            $doc->startElement('tei:div');
+                $doc->writeAttribute('type', 'edition');
+                $doc->startElement('tei:ab');
+                    if (array_key_exists($side . ' Legend Orientation', $row) && strlen($row[$side . ' Legend Orientation']) > 0){
+                        $doc->writeAttribute('rend', trim($row[$side . ' Legend Orientation']));
+                    }
+                    $doc->text($legend);
+                $doc->endElement();
+            $doc->endElement();
+            
+            //transliteration
+            if (array_key_exists($side . ' Legend Transliteration', $row) && strlen(trim($row[$side . ' Legend Transliteration'])) > 0){
+                $doc->startElement('tei:div');
+                    $doc->writeAttribute('type', 'transliteration');
+                    $doc->startElement('tei:ab');
+                        $doc->text(trim($row[$side . ' Legend Transliteration']));
+                    $doc->endElement();
+                $doc->endElement();
+            }
+        } else {
+            $doc->text($legend);
+        }
+        
+        $doc->endElement();
+        
+        unset($legend);
+    } else {
+        //otherwise, iterate through columns to find any Reverse Legend Column with a script code (ISO 15924) via regex
+        $legends = array();
+        
+        foreach ($row as $k=>$v){
+            if (preg_match('/^' . $side . '\sLegend\s\(([A-Z][a-z]{3})\)$/', $k, $matches)){
+                $legend = trim($v);
+                
+                if (strlen($legend) > 0) {
+                    $legends[] = array('scriptCode'=>$matches[1], 'value'=>$legend);
+                }
+            }
+        }
+        
+        if (count($legends) > 0){
+            $doc->startElement('legend');
+                if (count($legends) == 1) {
+                    $lang = parse_scriptCode($legends[0]['scriptCode']);
+                    $doc->writeAttribute('scriptCode', $lang['scriptCode']);
+                    $doc->writeAttribute('xml:lang', $lang['lang']);
+                    $doc->text($legends[0]['value']);
+                } else {
+                    $doc->startElement('tei:div');
+                        $doc->writeAttribute('type', 'edition');
+                        //include orientation if applicable
+                        if (array_key_exists($side . ' Legend Orientation', $row) && strlen($row[$side . ' Legend Orientation']) > 0){
+                            $doc->writeAttribute('rend', trim($row[$side . ' Legend Orientation']));
+                        }
+                
+                        foreach ($legends as $legend){
+                            $lang = parse_scriptCode($legend['scriptCode']);
+                            
+                            //the EpiDoc guidelines concatenate the language code with the script code with a hyphen separator, https://epidoc.stoa.org/gl/latest/trans-foreigntext.html
+                            $doc->startElement('tei:div');
+                                $doc->writeAttribute('type', 'textpart');
+                                $doc->writeAttribute('xml:lang', $lang['lang'] . '-' . $lang['scriptCode']);
+                                $doc->startElement('tei:ab');
+                                    $doc->text($legend['value']);
+                                $doc->endElement();
+                            $doc->endElement();
+                        }
+                    $doc->endElement();
+                        
+                    //transliteration
+                    if (array_key_exists($side . ' Legend Transliteration', $row) && strlen(trim($row[$side . ' Legend Transliteration'])) > 0){
+                        $doc->startElement('tei:div');
+                            $doc->writeAttribute('type', 'transliteration');
+                            $doc->startElement('tei:ab');
+                                $doc->text(trim($row[$side . ' Legend Transliteration']));
+                            $doc->endElement();
+                        $doc->endElement();
+                    }
+                }
+            $doc->endElement();
+        }
+        
+        unset($legends);
+    }
 }
 
 //parse the recordId and construct the typeNumber
@@ -1754,6 +1829,10 @@ function processUri($uri){
         }
     }
     switch($type){
+        case 'nmo:Authenticity':
+            $content['element'] = 'authenticity';
+            $content['label'] = $label;
+            break;
         case 'nmo:Mint':
         case 'nmo:Region':
             $content['element'] = 'geogname';
@@ -1778,6 +1857,7 @@ function processUri($uri){
         case 'crm:E37_Mark':
             $content['element'] = 'symbol';
             $content['label'] = $label;
+            $content['type'] = $type;
             break;
         case 'nmo:ObjectType':
             $content['element'] = 'objectType';

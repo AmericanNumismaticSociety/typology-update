@@ -67,9 +67,7 @@ if (isset($argv[1])){
 }
 
 //proceed with spreadsheet->NUDS processing
-if (isset($project)){
-    echo "true\n";
-    
+if (isset($project)){    
     var_dump($project);
     
     $eXist_config_path = '/usr/local/projects/numishare/exist-config.xml';
