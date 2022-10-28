@@ -37,7 +37,11 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                       
             $doc->startElement('otherRecordId');
                 $doc->writeAttribute('localType', 'typeNumber');
-                $doc->text(get_typeNumber($recordId, $project));
+                if (array_key_exists('Type Number', $row) && strlen($row['Type Number']) > 0){
+                    $doc->text(trim($row['Type Number']));
+                } else {
+                    $doc->text(get_typeNumber($recordId, $project));
+                }                
             $doc->endElement();
             
             //hierarchy
@@ -745,6 +749,18 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
             }
             
             //end reverse
+            $doc->endElement();
+        }
+        
+        //Explicit Type Series
+        if (array_key_exists('Type Series URI', $row) && strlen(trim($row['Type Series URI'])) > 0){
+            $uri = $row['Type Series URI'];
+            $content = processUri($uri);
+            
+            $doc->startElement('typeSeries');
+                $doc->writeAttribute('xlink:type', 'simple');               
+                $doc->writeAttribute('xlink:href', $uri);
+                $doc->text($content['label']);
             $doc->endElement();
         }
         

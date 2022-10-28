@@ -29,6 +29,12 @@
        "o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5yn9InMwKrrK2UKvbBACm8PZSn5Ht9YSG7iv4wQ2TOu9a-h3WcTQE1E3lLO58hy22cHahMeVBQe5k/pub?gid=453963359&single=true&output=csv",
        "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5yn9InMwKrrK2UKvbBACm8PZSn5Ht9YSG7iv4wQ2TOu9a-h3WcTQE1E3lLO58hy22cHahMeVBQe5k/pub?gid=224949462&single=true&output=csv"
      },
+     { "name": "pella",
+       "uri_space": "http://numismatics.org/pella/id/",   
+       "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvTi7hs9jtRn_nOVZjU9eSNBX45-iQAD1hmE9ch86sxlwP4bI764rOms7WClova_8cHs6t1ZcfWtF0/pub?gid=862262209&single=true&output=csv",
+       "o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvTi7hs9jtRn_nOVZjU9eSNBX45-iQAD1hmE9ch86sxlwP4bI764rOms7WClova_8cHs6t1ZcfWtF0/pub?gid=20023969&single=true&output=csv",
+       "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvTi7hs9jtRn_nOVZjU9eSNBX45-iQAD1hmE9ch86sxlwP4bI764rOms7WClova_8cHs6t1ZcfWtF0/pub?gid=975118760&single=true&output=csv"
+     },
      { "name": "pco",
        "uri_space": "http://numismatics.org/pco/id/",   
        "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQFHZHiQCr1MNrnZC9Rca1UbpawQDC86E-laoySz4cADKWgQxL0gOGCDJy531HiQQ82xbSroyZpldsl/pub?gid=1853362774&single=true&output=csv",
