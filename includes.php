@@ -54,12 +54,11 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                     if (array_key_exists('sortId', $row) && strlen($row['sortId']) > 0){
                         $doc->text($row['sortId']);
                     } else {
-                        $doc->text(number_pad(intval($count), 4));
+                        $doc->text(number_pad(intval($count), 5));
                     }
                 $doc->endElement();  
                 $doc->writeElement('publicationStatus', 'approved');
-            }
-            
+            }            
             
             if (array_key_exists('Matching URI', $row) && strlen(trim($row['Matching URI'])) > 0){
                 $uris = explode('|', trim($row['Matching URI']));
@@ -155,7 +154,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
         //look for any column where the first four letters begin with lower-case 'note'
         $hasNotes = false;
         foreach ($row as $k=>$v){
-            if (substr(strtolower($k), 0, 4) == 'note'){
+            if (substr(strtolower($k), 0, 4) == 'note' && strlen(trim($v)) > 0){
                 $hasNotes = true;
             }
         }
@@ -163,11 +162,11 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
         if ($hasNotes == true){
             $doc->startElement('noteSet');
                 foreach ($row as $k=>$v){
-                    if (substr(strtolower($k), 0, 4) == 'note'){
+                    if (substr(strtolower($k), 0, 4) == 'note' && strlen(trim($v)) > 0){
                         $doc->startElement('note');
                             $doc->writeAttribute('xml:lang', 'en');
                             $doc->text(trim($v));
-                        $doc->endElement();
+                        $doc->endElement();    
                     }
                 }
             $doc->endElement();
