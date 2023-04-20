@@ -768,8 +768,28 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
         $doc->endElement();
         
         /***** REFDESC *****/
+        //evaluate any column beginning with the string 'Reference'
+        $references = array();        
+        foreach ($row as $k=>$v){
+            if (strpos($k, 'Reference') === 0){
+                if (preg_match('/^Reference\s\((.*)\)$/', $k, $matches)){
+                    $ref = trim($v);
+                    
+                    if (strlen($ref) > 0 && isset($matches[1])) {                        
+                        $references[] = array('refCode'=>$matches[1], 'value'=>$ref);
+                    }
+                } else {
+                    $ref = trim($v);
+                    
+                    if (strlen($ref) > 0) {
+                        $references[] = array('value'=>$v);
+                    }
+                }
+            }
+        }
+        
         //create references to previous volumes        
-        if ((array_key_exists('Deprecated ID', $row) && strlen($row['Deprecated ID']) > 0) || (array_key_exists('Matching URI', $row) && strlen($row['Matching URI']) > 0)){
+        if ((array_key_exists('Deprecated ID', $row) && strlen($row['Deprecated ID']) > 0) || (array_key_exists('Matching URI', $row) && strlen($row['Matching URI']) > 0) || count($references) > 0){
             $doc->startElement('refDesc');
             
             if (array_key_exists('Deprecated ID', $row) && strlen($row['Deprecated ID']) > 0){
@@ -801,6 +821,34 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
                     $doc->endElement();
                 }
             }
+            
+            //parse text-based, not URI references, linking them to Nomisma IDs for type series, if applicable
+            foreach ($references as $reference) {
+                $doc->startElement('reference');
+                    
+                if (array_key_exists('refCode', $reference)) {
+                    $refMetadata = parse_refCode($reference['refCode']);
+                    
+                    //if the reference code returns an array of metadata, then generate TEI, otherwise output the text of the column value
+                    if (isset($refMetadata)){
+                        $doc->startElement('tei:title');
+                            $doc->writeAttribute('key', $refMetadata['typeSeries']);
+                            $doc->text($refMetadata['title']);
+                        $doc->endElement();
+                        $doc->startElement('tei:idno');
+                            $doc->text($reference['value']);
+                        $doc->endElement();
+                    } else {
+                        $doc->text($reference['value']);
+                    }
+                    
+                } else {
+                    $doc->text($reference['value']);
+                }  
+                    
+                $doc->endElement();
+            }
+            
             $doc->endElement();
         }
         
@@ -1056,6 +1104,23 @@ function parse_scriptCode($scriptCode){
     }
     
     return array('scriptCode'=>$scriptCode, 'lang'=>$lang);
+}
+
+//parse the reference code from the parentheses of the Reference column header
+function parse_refCode($refCode){
+    
+    switch ($refCode){
+        case 'Bopearachchi':
+            $metadata = array('title'=>'Bopearachchi', 'typeSeries'=>'http://nomisma.org/id/bopearachchi-1991');
+            break;
+        case 'Mitchiner':
+            $metadata = array('title'=>'Mitchiner', 'typeSeries'=>'http://nomisma.org/id/mitchiner-1976');
+            break;
+        default:
+            $metadata = null;
+    }
+    
+    return $metadata;
 }
 
 function render_legend($doc, $row, $side){
