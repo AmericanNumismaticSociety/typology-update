@@ -1,19 +1,24 @@
 <?php 
 
 /***** FUNCTIONS *****/
-function generate_nuds($row, $project, $obverses, $reverses, $count){
+function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
     
     $uri_space = $project['uri_space'];
     
     $recordId = trim($row['ID']);
     
     
-    if (strlen($recordId) > 0){
+    if (strlen($recordId) > 0 && ($mode == 'test' || $mode == 'prod')){
         echo "Processing {$recordId}\n";
         $doc = new XMLWriter();
         
-        $doc->openUri('php://output');
-        //$doc->openUri('nuds/' . $recordId . '.xml');
+        
+        if ($mode == 'test'){
+            $doc->openUri('php://output');
+        } elseif ($mode == 'prod'){            
+            $doc->openUri('nuds/' . $project['name'] . '/'. $recordId . '.xml');
+        }
+        
         $doc->setIndent(true);
         //now we need to define our Indent string,which is basically how many blank spaces we want to have for the indent
         $doc->setIndentString("    ");
@@ -865,22 +870,28 @@ function generate_nuds($row, $project, $obverses, $reverses, $count){
     }
 }
 
-
-//write the NUDS file to the appropriate collection in eXist-db
-function put_to_exist($filename, $recordId, $project, $eXist_url, $eXist_credentials){
-    if (($readFile = fopen($filename, 'r')) === FALSE){
-        echo "Unable to read {$recordId}.xml\n";
+/***** PUBLICATION AND REPORTING FUNCTIONS *****/
+function put_to_exist($recordId, $project, $eXist_credentials) {
+    GLOBAL $errors;
+    GLOBAL $idsToIndex;
+    
+    $fileName = 'nuds/' . $project['name'] . '/'. $recordId . '.xml';
+    $datetime = date(DATE_W3C);
+    
+    //read file back into memory for PUT to eXist
+    if (($readFile = fopen($fileName, 'r')) === FALSE){
+        $errors[] = "Unable to read {$fileName} for putting to eXist-db.\n";
     } else {
         //PUT xml to eXist
         $putToExist=curl_init();
         
         //set curl opts
-        curl_setopt($putToExist,CURLOPT_URL, $eXist_url . 'ocre/objects/' . $recordId . '.xml');
+        curl_setopt($putToExist,CURLOPT_URL, EXIST_URL . $project['name'] . '/objects/' . $recordId . '.xml');
         curl_setopt($putToExist,CURLOPT_HTTPHEADER, array("Content-Type: text/xml; charset=utf-8"));
         curl_setopt($putToExist,CURLOPT_CONNECTTIMEOUT,2);
         curl_setopt($putToExist,CURLOPT_RETURNTRANSFER,1);
         curl_setopt($putToExist,CURLOPT_PUT,1);
-        curl_setopt($putToExist,CURLOPT_INFILESIZE,filesize($filename));
+        curl_setopt($putToExist,CURLOPT_INFILESIZE,filesize($fileName));
         curl_setopt($putToExist,CURLOPT_INFILE,$readFile);
         curl_setopt($putToExist,CURLOPT_USERPWD,$eXist_credentials);
         $response = curl_exec($putToExist);
@@ -889,20 +900,80 @@ function put_to_exist($filename, $recordId, $project, $eXist_url, $eXist_credent
         
         //error and success logging
         if (curl_error($putToExist) === FALSE){
-            echo "{$recordId} failed to write to eXist.\n";
-        }
-        else {
+            $errors[] = "{$recordId} failed to upload to eXist at {$datetime}\n";
+        } else {
             if ($http_code == '201'){
-                echo "{$recordId} written.\n";
+                echo "Writing {$recordId}.\n";
+                
+                //if file was successfully PUT to eXist, add the accession number to the array for Solr indexing.
+                $idsToIndex[] = $recordId;
+                
+                //index records into Solr in increments of the INDEX_COUNT constant
+                if (count($idsToIndex) > 0 && count($idsToIndex) % INDEX_COUNT == 0 ){
+                    $start = count($idsToIndex) - INDEX_COUNT;
+                    $toIndex = array_slice($idsToIndex, $start, INDEX_COUNT);
+                    
+                    //POST TO SOLR
+                    generate_solr_shell_script($toIndex, $project);
+                }
             }
         }
         //close eXist curl
         curl_close($putToExist);
         
-        //close files and delete from /tmp
+        //close files and delete
         fclose($readFile);
-        //unlink($filename);
+        unlink($fileName);
     }
+}
+
+//generate a shell script to activate batch ingestion
+function generate_solr_shell_script($array, $project){
+    $uniqid = uniqid();
+    $solrDocUrl = 'http://localhost:8080/orbeon/numishare/' . $project['name'] . '/ingest?identifiers=' . implode('%7C', $array);
+    
+    //generate content of bash script
+    $sh = "#!/bin/sh\n";
+    $sh .= "curl {$solrDocUrl} > /tmp/{$uniqid}.xml\n";
+    $sh .= "curl " . NUMISHARE_SOLR_URL . " --data-binary @/tmp/{$uniqid}.xml -H 'Content-type:text/xml; charset=utf-8'\n";
+    $sh .= "curl " . NUMISHARE_SOLR_URL . " --data-binary '<commit/>' -H 'Content-type:text/xml; charset=utf-8'\n";
+    $sh .= "rm /tmp/{$uniqid}.xml\n";
+    
+    $shFileName = '/tmp/' . $uniqid . '.sh';
+    $file = fopen($shFileName, 'w');
+    if ($file){
+        fwrite($file, $sh);
+        fclose($file);
+        
+        echo "Posting to Solr.\n";
+        
+        //execute script
+        shell_exec('sh /tmp/' . $uniqid . '.sh > /dev/null 2>/dev/null &');
+        //commented out the line below because PHP seems to delete the file before it has had a chance to run in the shell
+        //unlink('/tmp/' . $uniqid . '.sh');
+    } else {
+        echo "Unable to read {$uniqid}.sh\n";
+    }
+}
+
+//send an email report
+function generate_email_report ($idsToIndex, $errors, $project, $startTime, $endTime){
+    $to = 'database@numismatics.org,egruber@numismatics.org,' . $project['email'];
+    $subject = "Error report for " . $project['name'];
+    $body = "Error Report for " . $project['name'] . "\n\n";
+    $body .= "Successful objects: " . count($idsToIndex) . "\n";
+    $body .= "Errors: " . count($errors) . "\n\n";
+    $body .= "Start Time: {$startTime}\n";
+    $body .= "End Time: {$endTime}\n\n";
+    $body .= "The following accession numbers failed to process:\n\n";
+    foreach ($errors as $error){
+        $body .= $error . "\n";
+    }
+    $body .= "\nNote that records with errors were not published to Numishare. Please review the relevant spreadsheets.\n";
+    
+    echo "Sending email report.\n";
+    
+    mail($to, $subject, $body);
 }
 
 /***** FUNCTIONS FOR PROCESSING SYMBOLS INTO EPIDOC TEI *****/

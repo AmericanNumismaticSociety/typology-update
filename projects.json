@@ -1,7 +1,8 @@
 {
   "projects": [
      { "name": "ocre",
-     	"uri_space": "http://numismatics.org/ocre/id/",        
+     	"uri_space": "http://numismatics.org/ocre/id/",
+     	"email": "lcarbone@numismatics.org",  
        "parts": [
             {
                 "name" : "ric.8",
@@ -13,36 +14,42 @@
      },
      { "name": "crro",
        "uri_space": "http://numismatics.org/crro/id/",   
+       "email": "lcarbone@numismatics.org",  
        "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRxzNNLc4uLaPfNO60mNG4QJ09nWg0D4mosOCM-eQfbO4vqTj8skEE6zkJ7IbLdCrHVbWslehKDh5LN/pub?gid=1579772728&single=true&output=csv",
        "o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRxzNNLc4uLaPfNO60mNG4QJ09nWg0D4mosOCM-eQfbO4vqTj8skEE6zkJ7IbLdCrHVbWslehKDh5LN/pub?gid=1411485313&single=true&output=csv",
        "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRxzNNLc4uLaPfNO60mNG4QJ09nWg0D4mosOCM-eQfbO4vqTj8skEE6zkJ7IbLdCrHVbWslehKDh5LN/pub?gid=1676912151&single=true&output=csv"
      },
      { "name": "agco",
        "uri_space": "http://numismatics.org/agco/id/",   
+       "email": "pvanalfen@numismatics.org",  
        "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxHxzpo5ViobC3NdJNmdy-Jwv4xAzQdtM0lGssSup-a3VWG7m5xLSgZN9S50WOZH-aWyMZou4RvelW/pub?gid=0&single=true&output=csv",
        "o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxHxzpo5ViobC3NdJNmdy-Jwv4xAzQdtM0lGssSup-a3VWG7m5xLSgZN9S50WOZH-aWyMZou4RvelW/pub?gid=453963359&single=true&output=csv",
        "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxHxzpo5ViobC3NdJNmdy-Jwv4xAzQdtM0lGssSup-a3VWG7m5xLSgZN9S50WOZH-aWyMZou4RvelW/pub?gid=224949462&single=true&output=csv"
      },
      { "name": "bigr",
        "uri_space": "https://numismatics.org/bigr/id/",   
+       "email": "pvanalfen@numismatics.org",  
        "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5yn9InMwKrrK2UKvbBACm8PZSn5Ht9YSG7iv4wQ2TOu9a-h3WcTQE1E3lLO58hy22cHahMeVBQe5k/pub?gid=0&single=true&output=csv",
        "o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5yn9InMwKrrK2UKvbBACm8PZSn5Ht9YSG7iv4wQ2TOu9a-h3WcTQE1E3lLO58hy22cHahMeVBQe5k/pub?gid=453963359&single=true&output=csv",
        "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5yn9InMwKrrK2UKvbBACm8PZSn5Ht9YSG7iv4wQ2TOu9a-h3WcTQE1E3lLO58hy22cHahMeVBQe5k/pub?gid=224949462&single=true&output=csv"
      },
      { "name": "pella",
        "uri_space": "http://numismatics.org/pella/id/",   
+       "email": "pvanalfen@numismatics.org",  
        "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvTi7hs9jtRn_nOVZjU9eSNBX45-iQAD1hmE9ch86sxlwP4bI764rOms7WClova_8cHs6t1ZcfWtF0/pub?gid=862262209&single=true&output=csv",
        "o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvTi7hs9jtRn_nOVZjU9eSNBX45-iQAD1hmE9ch86sxlwP4bI764rOms7WClova_8cHs6t1ZcfWtF0/pub?gid=20023969&single=true&output=csv",
        "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvTi7hs9jtRn_nOVZjU9eSNBX45-iQAD1hmE9ch86sxlwP4bI764rOms7WClova_8cHs6t1ZcfWtF0/pub?gid=975118760&single=true&output=csv"
      },
      { "name": "pco",
-       "uri_space": "http://numismatics.org/pco/id/",   
+       "uri_space": "http://numismatics.org/pco/id/",  
+       "email": "pvanalfen@numismatics.org",   
        "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQFHZHiQCr1MNrnZC9Rca1UbpawQDC86E-laoySz4cADKWgQxL0gOGCDJy531HiQQ82xbSroyZpldsl/pub?gid=1853362774&single=true&output=csv",
        "o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQFHZHiQCr1MNrnZC9Rca1UbpawQDC86E-laoySz4cADKWgQxL0gOGCDJy531HiQQ82xbSroyZpldsl/pub?gid=1223774619&single=true&output=csv",
        "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQFHZHiQCr1MNrnZC9Rca1UbpawQDC86E-laoySz4cADKWgQxL0gOGCDJy531HiQQ82xbSroyZpldsl/pub?gid=1472724110&single=true&output=csv"
      },
      { "name": "sco",
        "uri_space": "http://numismatics.org/sco/id/",   
+       "email": "pvanalfen@numismatics.org",  
        "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-U8FG5i6BSlYyWUqEYMi7SmVtLv1YhYD1siB0nlKvAyjQxMU2HsDytmwlOQvr1dh0R6Px8lJGQ_Hh/pub?gid=79107715&single=true&output=csv",
        "o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-U8FG5i6BSlYyWUqEYMi7SmVtLv1YhYD1siB0nlKvAyjQxMU2HsDytmwlOQvr1dh0R6Px8lJGQ_Hh/pub?gid=1665520814&single=true&output=csv",
        "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR-U8FG5i6BSlYyWUqEYMi7SmVtLv1YhYD1siB0nlKvAyjQxMU2HsDytmwlOQvr1dh0R6Px8lJGQ_Hh/pub?gid=174780238&single=true&output=csv"
