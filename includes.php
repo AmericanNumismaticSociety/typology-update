@@ -367,7 +367,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
         }
         
         //authority
-        if (array_key_exists('Authority URI', $row) || array_key_exists('Stated Authority URI', $row) || array_key_exists('Issuer URI', $row) || array_key_exists('Authenticity URI', $row)){
+        if (array_key_exists('Authority URI', $row) || array_key_exists('Stated Authority URI', $row) || array_key_exists('Issuer URI', $row) || array_key_exists('Artist URI', $row) || array_key_exists('Maker URI', $row) || array_key_exists('Authenticity URI', $row)){
             $doc->startElement('authority');
             if (array_key_exists('Authority URI', $row) && strlen($row['Authority URI']) > 0){
                 $vals = explode('|', $row['Authority URI']);
@@ -434,6 +434,58 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
                         $content = processUri($uri);
                     }
                     $role = 'issuer';
+                    
+                    $doc->startElement($content['element']);
+                        $doc->writeAttribute('xlink:type', 'simple');
+                        $doc->writeAttribute('xlink:role', $role);
+                        $doc->writeAttribute('xlink:href', $uri);
+                        if($uncertainty == true){
+                            $doc->writeAttribute('certainty', 'http://nomisma.org/id/uncertain_value');
+                        }
+                        $doc->text($content['label']);
+                    $doc->endElement();
+                }
+            }
+            
+            if (array_key_exists('Artist URI', $row) && strlen($row['Artist URI']) > 0){
+                $vals = explode('|', $row['Artist URI']);
+                foreach ($vals as $val){
+                    if (substr($val, -1) == '?'){
+                        $uri = substr($val, 0, -1);
+                        $uncertainty = true;
+                        $content = processUri($uri);
+                    } else {
+                        $uri =  $val;
+                        $uncertainty = false;
+                        $content = processUri($uri);
+                    }
+                    $role = 'artist';
+                    
+                    $doc->startElement($content['element']);
+                        $doc->writeAttribute('xlink:type', 'simple');
+                        $doc->writeAttribute('xlink:role', $role);
+                        $doc->writeAttribute('xlink:href', $uri);
+                        if($uncertainty == true){
+                            $doc->writeAttribute('certainty', 'http://nomisma.org/id/uncertain_value');
+                        }
+                        $doc->text($content['label']);
+                    $doc->endElement();
+                }
+            }
+            
+            if (array_key_exists('Maker URI', $row) && strlen($row['Maker URI']) > 0){
+                $vals = explode('|', $row['Maker URI']);
+                foreach ($vals as $val){
+                    if (substr($val, -1) == '?'){
+                        $uri = substr($val, 0, -1);
+                        $uncertainty = true;
+                        $content = processUri($uri);
+                    } else {
+                        $uri =  $val;
+                        $uncertainty = false;
+                        $content = processUri($uri);
+                    }
+                    $role = 'artist';
                     
                     $doc->startElement($content['element']);
                         $doc->writeAttribute('xlink:type', 'simple');
@@ -1290,7 +1342,9 @@ function render_legend($doc, $row, $side){
 
 //parse the recordId and construct the typeNumber
 function get_typeNumber($recordId, $project){
-    if ($project['name'] == 'ocre'){
+    if ($project['name'] == 'aod'){
+        $typeNumber = $recordId;
+    } elseif ($project['name'] == 'ocre'){
         $typeNumber = explode('.', $recordId)[3];
     } elseif ($project['name'] == 'crro') {
         $typeNumber = str_replace('.', '/', str_replace('rrc-', '', $recordId));
@@ -1319,8 +1373,9 @@ function get_typeNumber($recordId, $project){
 
 //function for automatically generating the title based on the recordId
 function get_title($recordId, $project){
-    
-    if ($project['name'] == 'ocre'){
+    if ($project['name'] == 'aod'){
+        $title = "AoD " . $recordId;
+    } elseif ($project['name'] == 'ocre'){
         //parsing of the OCRE title is more complex and is handled by a standalone function
         $title = get_ocre_title($recordId);
     } elseif ($project['name'] == 'crro'){
@@ -1946,39 +2001,47 @@ function processUri($uri){
         if (isset($nomismaUris[$uri]['parent'])){
             $parent = $nomismaUris[$uri]['parent'];
         }
-    } else {
-        //if the key does not exist, look the URI up in Nomisma
-        $file_headers = @get_headers($uri);
-        
-        //only get RDF if the ID exists
-        if (strpos($file_headers[0], '200') !== FALSE){
-            $xmlDoc = new DOMDocument();
-            $xmlDoc->load($uri . '.rdf');
-            $xpath = new DOMXpath($xmlDoc);
-            $xpath->registerNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
-            $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-            $xpath->registerNamespace('org', 'http://www.w3.org/ns/org#');
-            $type = $xpath->query("/rdf:RDF/*")->item(0)->nodeName;
-            $label = $xpath->query("descendant::skos:prefLabel[@xml:lang='en']")->item(0)->nodeValue;
-            
-            if (!isset($label)){
-                echo "Error with {$uri}\n";
-            }
-            
-            //get the parent, if applicable
-            $parents = $xpath->query("descendant::org:organization");
-            if ($parents->length > 0){
-                $nomismaUris[$uri] = array('label'=>$label,'type'=>$type, 'parent'=>$parents->item(0)->getAttribute('rdf:resource'));
-                $parent = $parents->item(0)->getAttribute('rdf:resource');
-            } else {
-                $nomismaUris[$uri] = array('label'=>$label,'type'=>$type);
-            }
+    } else {        
+        //perform Wikidata Query
+        if (preg_match('/^http:\/\/www\.wikidata\.org\/entity\/Q[0-9]+$/', $uri)){
+            //echo "Wikidata URI found\n";            
+            $nomismaUris[$uri] = query_wikidata($uri);            
         } else {
-            //otherwise output the error
-            echo "Error: {$uri} not found.\n";
-            $nomismaUris[$uri] = array('label'=>$uri,'type'=>null);
+            //look the URI up in Nomisma or assume a Numishare system
+            $file_headers = @get_headers($uri);
+            
+            //only get RDF if the ID exists
+            if (strpos($file_headers[0], '200') !== FALSE){
+                $xmlDoc = new DOMDocument();
+                $xmlDoc->load($uri . '.rdf');
+                $xpath = new DOMXpath($xmlDoc);
+                $xpath->registerNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
+                $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+                $xpath->registerNamespace('org', 'http://www.w3.org/ns/org#');
+                $type = $xpath->query("/rdf:RDF/*")->item(0)->nodeName;
+                $label = $xpath->query("descendant::skos:prefLabel[@xml:lang='en']")->item(0)->nodeValue;
+                
+                if (!isset($label)){
+                    echo "Error with {$uri}\n";
+                }
+                
+                //get the parent, if applicable
+                $parents = $xpath->query("descendant::org:organization");
+                if ($parents->length > 0){
+                    $nomismaUris[$uri] = array('label'=>$label,'type'=>$type, 'parent'=>$parents->item(0)->getAttribute('rdf:resource'));
+                    $parent = $parents->item(0)->getAttribute('rdf:resource');
+                } else {
+                    $nomismaUris[$uri] = array('label'=>$label,'type'=>$type);
+                }
+            } else {
+                //otherwise output the error
+                echo "Error: {$uri} not found.\n";
+                $nomismaUris[$uri] = array('label'=>$uri,'type'=>null);
+            }            
         }
     }
+    
+    //determine the NUDS element by the RDF type
     switch($type){
         case 'nmo:Authenticity':
             $content['element'] = 'authenticity';
@@ -2053,6 +2116,54 @@ function processUri($uri){
             $content['label'] = $label;
     }
     return $content;
+}
+
+function query_wikidata($uri){
+    $query = "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+CONSTRUCT {
+  ?uri skos:prefLabel ?label ;
+       rdf:type ?type
+  }
+WHERE {
+  BIND (<%URI%> as ?uri)
+   ?uri rdfs:label ?label ;
+        wdt:P31 ?type .
+}";
+    
+    $query_url = "https://query.wikidata.org/sparql?query=" . urlencode(str_replace('%URI%', $uri, $query));
+    
+    $xmlDoc = new DOMDocument();
+    $xmlDoc->load($query_url);
+    $xpath = new DOMXpath($xmlDoc);
+    $xpath->registerNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
+    $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+    
+    $types = $xpath->query("descendant::rdf:type");
+    $label = $xpath->query("descendant::skos:prefLabel[@xml:lang='en']")->item(0)->nodeValue;
+    
+    var_dump($types);
+    
+    //evaluate whether the concept is a human
+    $isHuman = false;
+    foreach ($types as $type){
+        if ($type->getAttribute('rdf:resource') == 'http://www.wikidata.org/entity/Q5') {
+            $isHuman = true;
+            break;
+        }
+    }
+    
+    if ($isHuman == true) {
+        $type = 'foaf:Person';
+    } else {
+        $type = 'foaf:Organization';
+    }
+    
+    return array('label'=>$label,'type'=>$type);
 }
 
 function get_date_textual($year){

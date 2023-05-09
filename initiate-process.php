@@ -8,6 +8,9 @@
 
 include "includes.php";
 
+//user-agent must be set in HTTP headers for Wikidata querying
+ini_set('user_agent', 'American Numismatic Society');
+
 define("NUMISHARE_SOLR_URL", "http://localhost:8983/solr/numishare/update");
 define("EXIST_URL", "http://localhost:8888/exist/rest/db/");
 define("INDEX_COUNT", 100);
