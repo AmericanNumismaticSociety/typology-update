@@ -181,6 +181,47 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
             $doc->endElement();
         }
         
+        /***** SUBJECTS *****/
+        $hasSubjects = false;
+        foreach ($row as $k=>$v){
+        	if (substr(strtolower($k), 0, 7) == 'subject' && strlen(trim($v)) > 0){
+        		$hasSubjects= true;
+        	}
+        }
+        
+        if ($hasSubjects == true){
+        	$doc->startElement('subjectSet');
+        	foreach ($row as $k=>$v){
+        		if (substr(strtolower($k), 0, 7) == 'subject' && strlen(trim($v)) > 0){
+        			$localType = strlen($k) > 7 ? $k : null;
+        			
+        			$vals = explode('|', trim($v));
+        			foreach ($vals as $val){
+        				$val = trim($val);
+        				
+        				$doc->startElement('subject');
+	        				if (isset($localType)){
+	        					$doc->writeAttribute('localType', $localType);
+	        					
+	        					if (preg_match('/^https?:\/\//', $val)){
+	        						$uri = $val;
+	        						$content = processUri($uri);
+	        						
+	        						$doc->writeAttribute('xlink:type', 'simple');
+	        						$doc->writeAttribute('xlink:href', $uri);
+	        						$doc->text($content['label']);
+	        					} else {
+	        						$doc->text($v);
+	        					}
+	        				}
+        				$doc->endElement();
+        			}
+        		}
+        	}
+        	$doc->endElement();
+        }
+        
+        
         /***** TYPEDESC *****/
         $doc->startElement('typeDesc');
         
@@ -267,6 +308,17 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
                     }
                 }            
             }
+        }
+        
+        if (array_key_exists('Date on Object', $row) && strlen($row['Date on Object']) > 0){
+        	$doc->startElement('dateOnObject');
+        		$doc->startElement('date');        			
+        			if (preg_match('/^\d{4}$/', $row['Date on Object'])){
+        				$doc->writeAttribute('standardDate', $row['Date on Object']);
+        			}        		
+        			$doc->text($row['Date on Object']);
+        		$doc->endElement();
+        	$doc->endElement();
         }
         
         if (array_key_exists('Denomination URI', $row) && strlen($row['Denomination URI']) > 0){
@@ -485,7 +537,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
                         $uncertainty = false;
                         $content = processUri($uri);
                     }
-                    $role = 'artist';
+                    $role = 'maker';
                     
                     $doc->startElement($content['element']);
                         $doc->writeAttribute('xlink:type', 'simple');
@@ -889,7 +941,9 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
                     //if the reference code returns an array of metadata, then generate TEI, otherwise output the text of the column value
                     if (isset($refMetadata)){
                         $doc->startElement('tei:title');
-                            $doc->writeAttribute('key', $refMetadata['typeSeries']);
+                        	if (array_key_exists('typeSeries', $refMetadata)){
+                        		$doc->writeAttribute('key', $refMetadata['typeSeries']);
+                        	}
                             $doc->text($refMetadata['title']);
                         $doc->endElement();
                         $doc->startElement('tei:idno');
@@ -1240,7 +1294,7 @@ function parse_refCode($refCode){
             $metadata = array('title'=>'Mitchiner', 'typeSeries'=>'http://nomisma.org/id/mitchiner-1976');
             break;
         default:
-            $metadata = null;
+            $metadata = array('title'=>$refCode);
     }
     
     return $metadata;
@@ -2005,128 +2059,133 @@ function processUri($uri){
     $label = '';
     $node = '';
     
-    //if the key exists, then formulate the XML response
-    if (array_key_exists($uri, $nomismaUris)){
-        $type = $nomismaUris[$uri]['type'];
-        $label = $nomismaUris[$uri]['label'];
-        if (isset($nomismaUris[$uri]['parent'])){
-            $parent = $nomismaUris[$uri]['parent'];
-        }
-    } else {        
-        //perform Wikidata Query
-        if (preg_match('/^http:\/\/www\.wikidata\.org\/entity\/Q[0-9]+$/', $uri)){
-            //echo "Wikidata URI found\n";            
-            $nomismaUris[$uri] = query_wikidata($uri);            
-        } else {
-            //look the URI up in Nomisma or assume a Numishare system
-            $file_headers = @get_headers($uri);
-            
-            //only get RDF if the ID exists
-            if (strpos($file_headers[0], '200') !== FALSE){
-                $xmlDoc = new DOMDocument();
-                $xmlDoc->load($uri . '.rdf');
-                $xpath = new DOMXpath($xmlDoc);
-                $xpath->registerNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
-                $xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-                $xpath->registerNamespace('org', 'http://www.w3.org/ns/org#');
-                $type = $xpath->query("/rdf:RDF/*")->item(0)->nodeName;
-                $label = $xpath->query("descendant::skos:prefLabel[@xml:lang='en']")->item(0)->nodeValue;
-                
-                if (!isset($label)){
-                    echo "Error with {$uri}\n";
-                }
-                
-                //get the parent, if applicable
-                $parents = $xpath->query("descendant::org:organization");
-                if ($parents->length > 0){
-                    $nomismaUris[$uri] = array('label'=>$label,'type'=>$type, 'parent'=>$parents->item(0)->getAttribute('rdf:resource'));
-                    $parent = $parents->item(0)->getAttribute('rdf:resource');
-                } else {
-                    $nomismaUris[$uri] = array('label'=>$label,'type'=>$type);
-                }
-            } else {
-                //otherwise output the error
-                echo "Error: {$uri} not found.\n";
-                $nomismaUris[$uri] = array('label'=>$uri,'type'=>null);
-            }            
-        }
+    //if the $uri variable matches an actual URI pattern, then perform associated lookups    
+    if (preg_match('/^https?:\/\//', $uri)){
+    	//if the key exists, then formulate the XML response
+    	if (array_key_exists($uri, $nomismaUris)){
+    		$type = $nomismaUris[$uri]['type'];
+    		$label = $nomismaUris[$uri]['label'];
+    		if (isset($nomismaUris[$uri]['parent'])){
+    			$parent = $nomismaUris[$uri]['parent'];
+    		}
+    	} else {
+    		//perform Wikidata Query
+    		if (preg_match('/^http:\/\/www\.wikidata\.org\/entity\/Q[0-9]+$/', $uri)){
+    			//echo "Wikidata URI found\n";
+    			$nomismaUris[$uri] = query_wikidata($uri);
+    		} else {
+    			//look the URI up in Nomisma or assume a Numishare system
+    			$file_headers = @get_headers($uri);
+    			
+    			//only get RDF if the ID exists
+    			if (strpos($file_headers[0], '200') !== FALSE){
+    				$xmlDoc = new DOMDocument();
+    				$xmlDoc->load($uri . '.rdf');
+    				$xpath = new DOMXpath($xmlDoc);
+    				$xpath->registerNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
+    				$xpath->registerNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+    				$xpath->registerNamespace('org', 'http://www.w3.org/ns/org#');
+    				$type = $xpath->query("/rdf:RDF/*")->item(0)->nodeName;
+    				$label = $xpath->query("descendant::skos:prefLabel[@xml:lang='en']")->item(0)->nodeValue;
+    				
+    				if (!isset($label)){
+    					echo "Error with {$uri}\n";
+    				}
+    				
+    				//get the parent, if applicable
+    				$parents = $xpath->query("descendant::org:organization");
+    				if ($parents->length > 0){
+    					$nomismaUris[$uri] = array('label'=>$label,'type'=>$type, 'parent'=>$parents->item(0)->getAttribute('rdf:resource'));
+    					$parent = $parents->item(0)->getAttribute('rdf:resource');
+    				} else {
+    					$nomismaUris[$uri] = array('label'=>$label,'type'=>$type);
+    				}
+    			} else {
+    				//otherwise output the error
+    				echo "Error: {$uri} not found.\n";
+    				$nomismaUris[$uri] = array('label'=>$uri,'type'=>null);
+    			}
+    		}
+    	}
+    	
+    	//determine the NUDS element by the RDF type
+    	switch($type){
+    		case 'nmo:Authenticity':
+    			$content['element'] = 'authenticity';
+    			$content['label'] = $label;
+    			break;
+    		case 'nmo:Mint':
+    		case 'nmo:Region':
+    			$content['element'] = 'geogname';
+    			$content['label'] = $label;
+    			if (isset($parent)){
+    				$content['parent'] = $parent;
+    			}
+    			break;
+    		case 'nmo:Material':
+    			$content['element'] = 'material';
+    			$content['label'] = $label;
+    			break;
+    		case 'nmo:Denomination':
+    			$content['element'] = 'denomination';
+    			$content['label'] = $label;
+    			break;
+    		case 'nmo:Manufacture':
+    			$content['element'] = 'manufacture';
+    			$content['label'] = $label;
+    			break;
+    		case 'nmo:Monogram':
+    		case 'crm:E37_Mark':
+    			$content['element'] = 'symbol';
+    			$content['label'] = $label;
+    			$content['type'] = $type;
+    			break;
+    		case 'nmo:ObjectType':
+    			$content['element'] = 'objectType';
+    			$content['label'] = $label;
+    			break;
+    		case 'nmo:Shape':
+    			$content['element'] = 'shape';
+    			$content['label'] = $label;
+    			break;
+    		case 'nmo:TypeSeriesItem':
+    			$content['element'] = 'typeSeries';
+    			$content['label'] = $label;
+    		case 'rdac:Family':
+    			$content['element'] = 'famname';
+    			$content['label'] = $label;
+    			break;
+    		case 'foaf:Organization':
+    		case 'foaf:Group':
+    		case 'nmo:Ethnic':
+    			$content['element'] = 'corpname';
+    			$content['label'] = $label;
+    			break;
+    		case 'foaf:Person':
+    			$content['element'] = 'persname';
+    			$content['label'] = $label;
+    			$content['role'] = 'portrait';
+    			if (isset($parent)){
+    				$content['parent'] = $parent;
+    			}
+    			break;
+    		case 'wordnet:Deity':
+    			$content['element'] = 'persname';
+    			$content['role'] = 'deity';
+    			$content['label'] = $label;
+    			break;
+    		case 'crm:E4_Period':
+    			$content['element'] = 'periodname';
+    			$content['label'] = $label;
+    			break;
+    		default:
+    			$content['element'] = 'ERR';
+    			$content['label'] = $label;
+    	}
+    	return $content;
     }
     
-    //determine the NUDS element by the RDF type
-    switch($type){
-        case 'nmo:Authenticity':
-            $content['element'] = 'authenticity';
-            $content['label'] = $label;
-            break;
-        case 'nmo:Mint':
-        case 'nmo:Region':
-            $content['element'] = 'geogname';
-            $content['label'] = $label;
-            if (isset($parent)){
-                $content['parent'] = $parent;
-            }
-            break;
-        case 'nmo:Material':
-            $content['element'] = 'material';
-            $content['label'] = $label;
-            break;
-        case 'nmo:Denomination':
-            $content['element'] = 'denomination';
-            $content['label'] = $label;
-            break;
-        case 'nmo:Manufacture':
-            $content['element'] = 'manufacture';
-            $content['label'] = $label;
-            break;
-        case 'nmo:Monogram':
-        case 'crm:E37_Mark':
-            $content['element'] = 'symbol';
-            $content['label'] = $label;
-            $content['type'] = $type;
-            break;
-        case 'nmo:ObjectType':
-            $content['element'] = 'objectType';
-            $content['label'] = $label;
-            break;
-        case 'nmo:Shape':
-            $content['element'] = 'shape';
-            $content['label'] = $label;
-            break;
-        case 'nmo:TypeSeriesItem':
-            $content['element'] = 'typeSeries';
-            $content['label'] = $label;
-        case 'rdac:Family':
-            $content['element'] = 'famname';
-            $content['label'] = $label;
-            break;
-        case 'foaf:Organization':
-        case 'foaf:Group':
-        case 'nmo:Ethnic':
-            $content['element'] = 'corpname';
-            $content['label'] = $label;
-            break;
-        case 'foaf:Person':
-            $content['element'] = 'persname';
-            $content['label'] = $label;
-            $content['role'] = 'portrait';
-            if (isset($parent)){
-                $content['parent'] = $parent;
-            }
-            break;
-        case 'wordnet:Deity':
-            $content['element'] = 'persname';
-            $content['role'] = 'deity';
-            $content['label'] = $label;
-            break;
-        case 'crm:E4_Period':
-            $content['element'] = 'periodname';
-            $content['label'] = $label;
-            break;
-        default:
-            $content['element'] = 'ERR';
-            $content['label'] = $label;
-    }
-    return $content;
+    
 }
 
 function query_wikidata($uri){
@@ -2156,8 +2215,6 @@ WHERE {
     
     $types = $xpath->query("descendant::rdf:type");
     $label = $xpath->query("descendant::skos:prefLabel[@xml:lang='en']")->item(0)->nodeValue;
-    
-    var_dump($types);
     
     //evaluate whether the concept is a human
     $isHuman = false;
