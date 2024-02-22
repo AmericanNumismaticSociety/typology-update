@@ -2,7 +2,7 @@
 
 /*****
  * Author: Ethan Gruber
- * Date: April 2023
+ * Date: May 2023
  * Function: Streamlined process for reading and updating typology projects from Google Sheets to Numishare
  *****/
 

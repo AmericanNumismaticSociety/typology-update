@@ -1273,6 +1273,17 @@ function render_legend($doc, $row, $side){
                     $doc->endElement();
                 $doc->endElement();
             }
+        } elseif (strpos($legend, '<hi') !== FALSE){
+            //rendering for legibility, ligatures, etc.
+            
+            $legend = str_replace('hi', 'tei:hi', $legend);
+            
+            $doc->startElement('tei:div');
+                $doc->writeAttribute('type', 'edition');
+                $doc->startElement('tei:ab');
+                    $doc->writeRaw($legend);
+                $doc->endElement();
+            $doc->endElement();
         } else {
             $doc->text($legend);
         }
