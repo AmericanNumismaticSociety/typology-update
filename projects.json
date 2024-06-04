@@ -4,6 +4,36 @@
      	"uri_space": "http://numismatics.org/ocre/id/",
      	"email": "lcarbone@numismatics.org",  
        "parts": [
+		   {
+			   "name" : "ric.1(2)",
+			   "types" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1n2QIoZ3eBOYhRkNCkt8O7B5V3fUN3ZkzMUNB3PnUsIXeFgVnrlhWoPvz6SZ6xAL_KLqT10Ytpf0S/pub?gid=396046468&single=true&output=csv",
+			   "o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1n2QIoZ3eBOYhRkNCkt8O7B5V3fUN3ZkzMUNB3PnUsIXeFgVnrlhWoPvz6SZ6xAL_KLqT10Ytpf0S/pub?gid=1845634583&single=true&output=csv",
+			   "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1n2QIoZ3eBOYhRkNCkt8O7B5V3fUN3ZkzMUNB3PnUsIXeFgVnrlhWoPvz6SZ6xAL_KLqT10Ytpf0S/pub?gid=230483515&single=true&output=csv" 
+		   },
+		   {
+			 	"name": "ric.2_1(2)",
+			 	"types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTMcA6jflp2eTTCHwxL9Vvegy2Nng-_di3mK8DLAkr0y2sHE_ym-i2U9x0gi9LmbLjVrhLV899NvPMR/pub?gid=0&single=true&output=csv",
+			 	"o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTMcA6jflp2eTTCHwxL9Vvegy2Nng-_di3mK8DLAkr0y2sHE_ym-i2U9x0gi9LmbLjVrhLV899NvPMR/pub?gid=1245272003&single=true&output=csv",
+			 	"r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTMcA6jflp2eTTCHwxL9Vvegy2Nng-_di3mK8DLAkr0y2sHE_ym-i2U9x0gi9LmbLjVrhLV899NvPMR/pub?gid=1456030783&single=true&output=csv"  
+		   },
+		   {
+			   "name": "ric.2",
+			   "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTx_G9w61_PuG07WEB5vy1bVXXFKVWHHOIUoLm1N8EYc4ROO9z1tTTBPDgM1bMsIfyKzqmXYSGaYmM7/pub?gid=0&single=true&output=csv",
+			   "o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTx_G9w61_PuG07WEB5vy1bVXXFKVWHHOIUoLm1N8EYc4ROO9z1tTTBPDgM1bMsIfyKzqmXYSGaYmM7/pub?gid=490051390&single=true&output=csv",
+			   "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTx_G9w61_PuG07WEB5vy1bVXXFKVWHHOIUoLm1N8EYc4ROO9z1tTTBPDgM1bMsIfyKzqmXYSGaYmM7/pub?gid=2008616297&single=true&output=csv"
+		   },
+		   {
+			   "name": "ric.2_3(2)",
+			   "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeO3tG20MI7K1Wihphufc-d3kpvVL2eAwTmvuTpr2Tm3l2gZVYlAAU1b312hSw-ajeDZEfZrwpZegq/pub?gid=0&single=true&output=csv",
+			   "o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeO3tG20MI7K1Wihphufc-d3kpvVL2eAwTmvuTpr2Tm3l2gZVYlAAU1b312hSw-ajeDZEfZrwpZegq/pub?gid=2019149041&single=true&output=csv",
+			   "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeO3tG20MI7K1Wihphufc-d3kpvVL2eAwTmvuTpr2Tm3l2gZVYlAAU1b312hSw-ajeDZEfZrwpZegq/pub?gid=390133400&single=true&output=csv"
+		   },
+		   {
+			   "name": "ric.3", 
+			   "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw_0jhpJbDNChzATBnYFs-KYo9xJh6SQyyQu25su8xi1p-DcypX5nL88OedzRrQG-oeVokuWeV-A5D/pub?gid=0&single=true&output=csv",
+			   "o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw_0jhpJbDNChzATBnYFs-KYo9xJh6SQyyQu25su8xi1p-DcypX5nL88OedzRrQG-oeVokuWeV-A5D/pub?gid=1752597859&single=true&output=csv",
+			   "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw_0jhpJbDNChzATBnYFs-KYo9xJh6SQyyQu25su8xi1p-DcypX5nL88OedzRrQG-oeVokuWeV-A5D/pub?gid=868941302&single=true&output=csv"
+		    },
             {
                 "name" : "ric.8",
                 "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ592qdkYhbCJjyjd0I9RwnOSI8GQdonPo7P_-3lbf-fks7a0fy-Af80RpjigYgyJt_ShTbCSGWpcEC/pub?output=csv",

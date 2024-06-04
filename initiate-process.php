@@ -2,7 +2,7 @@
 
 /*****
  * Author: Ethan Gruber
- * Date: May 2023
+ * Date: June 2024
  * Function: Streamlined process for reading and updating typology projects from Google Sheets to Numishare
  *****/
 
@@ -54,7 +54,7 @@ if (isset($argv[1])){
             }
             
             //if the project has been found, then look for parts
-            if (array_key_exists('parts', $p)){
+            if (property_exists($p, 'parts')){
                 if (isset($argv[2])){
                     $partExists = false;
                     

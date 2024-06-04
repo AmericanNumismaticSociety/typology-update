@@ -38,8 +38,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
         $doc->startElement('control');
             $doc->writeElement('recordId', $recordId);
             
-            //insert typeNumber just to capture the num.
-                      
+            //insert typeNumber just to capture the num.                      
             $doc->startElement('otherRecordId');
                 $doc->writeAttribute('localType', 'typeNumber');
                 if (array_key_exists('Type Number', $row) && strlen($row['Type Number']) > 0){
@@ -55,7 +54,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
                     $doc->writeAttribute('semantic', 'skos:broader');
                     $doc->text(trim($row['Parent ID']));
                 $doc->endElement();
-                $doc->writeElement('publicationStatus', 'approvedSubtype');
+                
             } else {
                 //insert a sortID
                 $doc->startElement('otherRecordId');
@@ -65,8 +64,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
                     } else {
                         $doc->text(number_pad(intval($count), 5));
                     }
-                $doc->endElement();  
-                $doc->writeElement('publicationStatus', 'approved');
+                $doc->endElement();
             }            
             
             if (array_key_exists('Matching URI', $row) && strlen(trim($row['Matching URI'])) > 0){
@@ -81,24 +79,64 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
                 }
             }
             
-            //handle semantic relation with other record
-            if (array_key_exists('Deprecated ID', $row) && strlen($row['Deprecated ID']) > 0){
-                $replaces = explode('|', $row['Deprecated ID']);
+            if (array_key_exists('replaces ID', $row) && strlen(trim($row['replaces ID'])) > 0){
+                $replaces = explode('|', $row['replaces ID']);
                 
-                foreach ($replaces as $deprecatedID){
-                    $deprecatedID = trim($deprecatedID);
+                foreach ($replaces as $replacesID){
+                    $replacesID = trim($replacesID);
                     $doc->startElement('otherRecordId');
                         $doc->writeAttribute('semantic', 'dcterms:replaces');
-                        $doc->text($deprecatedID);
+                        $doc->text($replacesID);
                     $doc->endElement();
                     $doc->startElement('otherRecordId');
                         $doc->writeAttribute('semantic', 'skos:exactMatch');
-                        $doc->text($uri_space . $deprecatedID);
+                        $doc->text($uri_space . $replacesID);
                     $doc->endElement();
                 }
             }
             
-            $doc->writeElement('maintenanceStatus', 'derived');
+            //handle semantic relation with other record
+            if (array_key_exists('isReplacedBy ID', $row) && strlen($row['isReplacedBy ID']) > 0){
+                $replaces = explode('|', $row['isReplacedBy ID']);
+                
+                $doc->writeElement('publicationStatus', 'deprecatedType');
+                
+                //if there is more than one replacement, then the status is cancelledSplit, otherwise cancelledReplaced
+                if (count($replaces) > 1) {
+                    $doc->writeElement('maintenanceStatus', 'cancelledSplit');
+                } else {
+                    $doc->writeElement('maintenanceStatus', 'cancelledReplaced');
+                }
+                
+                foreach ($replaces as $deprecatedID){
+                    $deprecatedID = trim($deprecatedID);
+                    $doc->startElement('otherRecordId');
+                        $doc->writeAttribute('semantic', 'dcterms:isReplacedBy');
+                        $doc->text($deprecatedID);
+                    $doc->endElement();
+                    
+                    //only insert skos:exactMatch if there is a 1:1 relationship
+                    if (count($replaces) == 1) {
+                        $doc->startElement('otherRecordId');
+                            $doc->writeAttribute('semantic', 'skos:exactMatch');
+                            $doc->text($uri_space . $deprecatedID);
+                        $doc->endElement();
+                    }
+                }
+            } else {
+                //set the maintenanceStatus and publicationStatus values
+                if (array_key_exists('maintenanceStatus', $row) && $row['maintenanceStatus'] == 'cancelled') {
+                    $doc->writeElement('publicationStatus', 'deprecatedType');
+                    $doc->writeElement('maintenanceStatus', 'cancelled');
+                } elseif (array_key_exists('Parent ID', $row) && strlen($row['Parent ID']) > 0) {
+                    $doc->writeElement('publicationStatus', 'approvedSubtype');
+                    $doc->writeElement('maintenanceStatus', 'derived');
+                } else {
+                    $doc->writeElement('publicationStatus', 'approved');
+                    $doc->writeElement('maintenanceStatus', 'derived');
+                }
+            }
+            
             $doc->startElement('maintenanceAgency');
                 $doc->writeElement('agencyName', 'American Numismatic Society');
             $doc->endElement();
@@ -846,7 +884,7 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
                         
                         $doc->startElement('symbol');
                             //differentiate before positions and semantic types
-                            if ($position == 'officinaMark' || $position == 'mintMark'){
+                            if ($position == 'officinaMark' || $position == 'mintMark' || $position == 'controlMark'){
                                 $doc->writeAttribute('localType', $position);
                             } else {
                                 $doc->writeAttribute('position', $position);
