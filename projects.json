@@ -34,12 +34,48 @@
 			   "o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw_0jhpJbDNChzATBnYFs-KYo9xJh6SQyyQu25su8xi1p-DcypX5nL88OedzRrQG-oeVokuWeV-A5D/pub?gid=1752597859&single=true&output=csv",
 			   "r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSw_0jhpJbDNChzATBnYFs-KYo9xJh6SQyyQu25su8xi1p-DcypX5nL88OedzRrQG-oeVokuWeV-A5D/pub?gid=868941302&single=true&output=csv"
 		    },
+		    {
+				"name": "ric.4",
+				"types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5sPQs4DSTupYXZ-l8-AOcaKsscDlEKl2-2wLQBcHwAFqKwFnmgm3WjkAsDKPMBKNFk4SXB8TzWDkw/pub?gid=0&single=true&output=csv",
+				"o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5sPQs4DSTupYXZ-l8-AOcaKsscDlEKl2-2wLQBcHwAFqKwFnmgm3WjkAsDKPMBKNFk4SXB8TzWDkw/pub?gid=715880317&single=true&output=csv",
+				"r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5sPQs4DSTupYXZ-l8-AOcaKsscDlEKl2-2wLQBcHwAFqKwFnmgm3WjkAsDKPMBKNFk4SXB8TzWDkw/pub?gid=275302745&single=true&output=csv"
+			},
+			{
+				"name": "ric.5",
+				"types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOGi1oPlxE6xf7KpVp-iznHYPUUiSJYfOuRKuAyNSgHKg8rpGDWYr__lzYNxucQzlPa_DQA0Om8Jle/pub?gid=0&single=true&output=csv",
+				"o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOGi1oPlxE6xf7KpVp-iznHYPUUiSJYfOuRKuAyNSgHKg8rpGDWYr__lzYNxucQzlPa_DQA0Om8Jle/pub?gid=264709158&single=true&output=csv",
+				"r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOGi1oPlxE6xf7KpVp-iznHYPUUiSJYfOuRKuAyNSgHKg8rpGDWYr__lzYNxucQzlPa_DQA0Om8Jle/pub?gid=1665826502&single=true&output=csv"
+			},
+		    {
+				"name": "ric.6",
+				"types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTKbCjTVsue6__YDWG4G_PECX0uoJKDPNusfPj4hubXq0oTJiCVavn2T5-p-Vgs3MkbilTIx6oeWFgL/pub?gid=0&single=true&output=csv",
+				"o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTKbCjTVsue6__YDWG4G_PECX0uoJKDPNusfPj4hubXq0oTJiCVavn2T5-p-Vgs3MkbilTIx6oeWFgL/pub?gid=1064035626&single=true&output=csv",
+				"r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTKbCjTVsue6__YDWG4G_PECX0uoJKDPNusfPj4hubXq0oTJiCVavn2T5-p-Vgs3MkbilTIx6oeWFgL/pub?gid=577349847&single=true&output=csv"
+			},
+			{
+				"name": "ric.7",
+				"types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSyyZCknEEQr3Mp96XGtfMiDOjujlEHrhhUIhsGhwBFp_U7Zqltwe7SaK3J-pz2AuHjpHhEi1M3NE-h/pub?gid=0&single=true&output=csv",
+				"o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSyyZCknEEQr3Mp96XGtfMiDOjujlEHrhhUIhsGhwBFp_U7Zqltwe7SaK3J-pz2AuHjpHhEi1M3NE-h/pub?gid=689470780&single=true&output=csv",
+				"r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSyyZCknEEQr3Mp96XGtfMiDOjujlEHrhhUIhsGhwBFp_U7Zqltwe7SaK3J-pz2AuHjpHhEi1M3NE-h/pub?gid=327667265&single=true&output=csv"
+			},
             {
                 "name" : "ric.8",
                 "types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ592qdkYhbCJjyjd0I9RwnOSI8GQdonPo7P_-3lbf-fks7a0fy-Af80RpjigYgyJt_ShTbCSGWpcEC/pub?output=csv",
                 "o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ592qdkYhbCJjyjd0I9RwnOSI8GQdonPo7P_-3lbf-fks7a0fy-Af80RpjigYgyJt_ShTbCSGWpcEC/pub?gid=1270156667&single=true&output=csv",
                 "r" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ592qdkYhbCJjyjd0I9RwnOSI8GQdonPo7P_-3lbf-fks7a0fy-Af80RpjigYgyJt_ShTbCSGWpcEC/pub?gid=1885710815&single=true&output=csv"
-            }
+            },
+            {
+				"name": "ric.9",
+				"types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQgkHAm9wSOluAA1g2WyS_iIB8gEahbveuR6K1_pRaPu01A0Ft1YvOBtODHWR274-zf8nxFGKcgoyT8/pub?gid=0&single=true&output=csv",
+				"o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQgkHAm9wSOluAA1g2WyS_iIB8gEahbveuR6K1_pRaPu01A0Ft1YvOBtODHWR274-zf8nxFGKcgoyT8/pub?gid=467474380&single=true&output=csv",
+				"r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQgkHAm9wSOluAA1g2WyS_iIB8gEahbveuR6K1_pRaPu01A0Ft1YvOBtODHWR274-zf8nxFGKcgoyT8/pub?gid=1620939024&single=true&output=csv"
+			},
+			{
+				"name": "ric.10",
+				"types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLITeyjWanX05KkjKeNhX5LV_Ds1TBnpbgt7KHJTXpQhQHFZQSGS_VCxlzLDTX_ewMSf20URXvzl7W/pub?gid=0&single=true&output=csv",
+				"o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLITeyjWanX05KkjKeNhX5LV_Ds1TBnpbgt7KHJTXpQhQHFZQSGS_VCxlzLDTX_ewMSf20URXvzl7W/pub?gid=391828393&single=true&output=csv",
+				"r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLITeyjWanX05KkjKeNhX5LV_Ds1TBnpbgt7KHJTXpQhQHFZQSGS_VCxlzLDTX_ewMSf20URXvzl7W/pub?gid=706708564&single=true&output=csv"
+			}
         ]
      },
      { "name": "crro",

@@ -1127,7 +1127,7 @@ function parse_symbol($doc, $text){
     $doc->startElement('tei:div');
     $doc->writeAttribute('type', 'edition');
     
-    //split into two pieces
+    //split into two pieces: three forward slashes indicates one symbol is above the other
     if (strpos($text, '///') !== FALSE){
         $positions = explode('///', $text);
         
@@ -1184,19 +1184,19 @@ function parse_horizontal ($doc, $text, $level){
     if (strpos($text, '|') !== FALSE){
         $horizontal = explode('|', $text);
         
-        foreach ($horizontal as $seg){
-            $seg = trim($seg);
-            
-            if ($level == 1){
-                $doc->startElement('tei:ab');
+        $doc->startElement('tei:ab');        
+            foreach ($horizontal as $seg){
+                $seg = trim($seg);
+                
+                if ($level == 1){
                     parse_conditional($doc, $seg, true);
-                $doc->endElement();
-            } else {
-                $doc->startElement('tei:seg');
-                    parse_conditional($doc, $seg, true);
-                $doc->endElement();
+                } else {
+                    $doc->startElement('tei:seg');
+                        parse_conditional($doc, $seg, true);
+                    $doc->endElement();
+                }
             }
-        }
+        $doc->endElement();
     } else {
         //no horizontal configuration, so parse ' or '
         parse_conditional($doc, $text, false);
