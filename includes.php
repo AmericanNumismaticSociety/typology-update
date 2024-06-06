@@ -1074,7 +1074,11 @@ function put_to_exist($recordId, $project, $eXist_credentials) {
 //generate a shell script to activate batch ingestion
 function generate_solr_shell_script($array, $project){
     $uniqid = uniqid();
-    $solrDocUrl = 'http://localhost:8080/orbeon/numishare/' . $project['name'] . '/ingest?identifiers=' . implode('%7C', $array);
+    
+    //urlencode the identifiers URL parameter
+    $identifiers = urlencode(implode('|', $array));
+    
+    $solrDocUrl = 'http://localhost:8080/orbeon/numishare/' . $project['name'] . '/ingest?identifiers=' . $identifiers;
     
     //generate content of bash script
     $sh = "#!/bin/sh\n";
