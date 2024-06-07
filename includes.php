@@ -1,7 +1,9 @@
 <?php 
 
 /***** FUNCTIONS *****/
-function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
+function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses, $count, $mode){
+    
+    $indexable = false;
     
     $uri_space = $project['uri_space'];
     
@@ -131,9 +133,11 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
                 } elseif (array_key_exists('Parent ID', $row) && strlen($row['Parent ID']) > 0) {
                     $doc->writeElement('publicationStatus', 'approvedSubtype');
                     $doc->writeElement('maintenanceStatus', 'derived');
+                    $indexable = true;
                 } else {
                     $doc->writeElement('publicationStatus', 'approved');
                     $doc->writeElement('maintenanceStatus', 'derived');
+                    $indexable = true;
                 }
             }
             
@@ -1009,13 +1013,20 @@ function generate_nuds($row, $project, $obverses, $reverses, $count, $mode){
         //close file
         $doc->endDocument();
         $doc->flush();
+        
+        
+        //initiate the put_to_exist process
+        if ($mode == 'prod') {            
+            put_to_exist($recordId, $project, $eXist_credentials, $indexable);
+        } 
+        
     } else {
         echo "No ID.\n";
     }
 }
 
 /***** PUBLICATION AND REPORTING FUNCTIONS *****/
-function put_to_exist($recordId, $project, $eXist_credentials) {
+function put_to_exist($recordId, $project, $eXist_credentials, $indexable) {
     GLOBAL $errors;
     GLOBAL $idsToIndex;
     
@@ -1049,17 +1060,25 @@ function put_to_exist($recordId, $project, $eXist_credentials) {
             if ($http_code == '201'){
                 echo "Writing {$recordId}.\n";
                 
-                //if file was successfully PUT to eXist, add the accession number to the array for Solr indexing.
-                $idsToIndex[] = $recordId;
+                //if file was successfully PUT to eXist, add the accession number to the array for Solr indexing, but only if it isn't a deprecated type
                 
-                //index records into Solr in increments of the INDEX_COUNT constant
-                if (count($idsToIndex) > 0 && count($idsToIndex) % INDEX_COUNT == 0 ){
-                    $start = count($idsToIndex) - INDEX_COUNT;
-                    $toIndex = array_slice($idsToIndex, $start, INDEX_COUNT);
+                if ($indexable == true) {
                     
-                    //POST TO SOLR
-                    generate_solr_shell_script($toIndex, $project);
-                }
+                    echo "Indexing {$recordId}\n";
+                    
+                    $idsToIndex[] = $recordId;
+                    
+                    //index records into Solr in increments of the INDEX_COUNT constant
+                    if (count($idsToIndex) > 0 && count($idsToIndex) % INDEX_COUNT == 0 ){
+                        $start = count($idsToIndex) - INDEX_COUNT;
+                        $toIndex = array_slice($idsToIndex, $start, INDEX_COUNT);
+                        
+                        //POST TO SOLR
+                        generate_solr_shell_script($toIndex, $project);
+                    }
+                } else {
+                    echo "Not indexing {$recordId}\n";    
+                }                
             }
         }
         //close eXist curl

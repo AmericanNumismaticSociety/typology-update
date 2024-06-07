@@ -23,7 +23,7 @@ $projectExists = false;
 
 
 //$mode should be 'test' or 'prod', which determines whether the NUDS/XML is written to the console or to eXist-db and indexed into Numishare
-$mode = 'test';
+$mode = 'prod';
 
 $nomismaUris = array();
 $errors = array();
@@ -118,13 +118,7 @@ if (isset($project)){
             
             foreach($data as $row){
                 if (in_array($row['ID'], $ids)){
-                    generate_nuds($row, $project, $obverses, $reverses, $count, $mode);
-                   
-                   //initiate the put_to_exist process
-                   if ($mode == 'prod') {
-                       $recordId = trim($row['ID']);                       
-                       put_to_exist($recordId, $project, $eXist_credentials);
-                    }                    
+                    generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses, $count, $mode);                   
                 }
                 $count++;
             }
@@ -133,17 +127,8 @@ if (isset($project)){
             echo "Process all\n";
             
             foreach($data as $row){                
-                generate_nuds($row, $project, $obverses, $reverses, $count, $mode);
+                generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses, $count, $mode);
                 $count++;
-                
-                //initiate the put_to_exist process
-                if ($mode == 'prod') {
-                    $recordId = trim($row['ID']);
-                    
-                    if (strlen($recordId) > 0) {
-                        put_to_exist($recordId, $project, $eXist_credentials);
-                    }
-                }   
             }
         }
         
