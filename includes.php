@@ -778,7 +778,7 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
                     }
                     $role = 'portrait';
                     
-                    $doc->startElement($content['element']);
+                    $doc->startElement('persname');
                         $doc->writeAttribute('xlink:type', 'simple');
                         $doc->writeAttribute('xlink:role', $role);
                         $doc->writeAttribute('xlink:href', $uri);
@@ -839,7 +839,7 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
                     }
                     $role = 'portrait';
                     
-                    $doc->startElement($content['element']);
+                    $doc->startElement('persname');
                         $doc->writeAttribute('xlink:type', 'simple');
                         $doc->writeAttribute('xlink:role', $role);
                         $doc->writeAttribute('xlink:href', $uri);
