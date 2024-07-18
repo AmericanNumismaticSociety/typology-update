@@ -1486,6 +1486,8 @@ function get_typeNumber($recordId, $project){
         $typeNumber = explode('.', $recordId)[2];
     } elseif ($project['name'] == 'sco'){
         $typeNumber = str_replace('sc.1.', '', $recordId);
+    } elseif ($project['name'] == 'lco'){
+        $typeNumber = str_replace('lco.yhd.', '', $recordId);
     } elseif ($project['name'] == 'bigr'){
         $idPieces = explode('.', $recordId);
         
