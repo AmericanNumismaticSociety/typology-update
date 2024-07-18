@@ -1354,6 +1354,12 @@ function parse_refCode($refCode){
         case 'Mitchiner':
             $metadata = array('title'=>'Mitchiner', 'typeSeries'=>'http://nomisma.org/id/mitchiner-1976');
             break;
+        case 'TJC':
+            $metadata = array('title'=> "TJC", 'typeSeries'=> 'https://donum.numismatics.org/bib/160000');
+            break;
+        case 'Hendin (2010)':
+            $metadata = array('title'=> 'Hendin (2010)', 'typeSeries'=> 'https://zenon.dainst.org/Record/003002648');
+            break;
         default:
             $metadata = array('title'=>$refCode);
     }
@@ -1508,6 +1514,8 @@ function get_title($recordId, $project){
         $title = str_replace('.', '/', str_replace('rrc-', 'RRC ', $recordId));
     } elseif ($project['name'] == 'agco') {
         $title = 'Newell Demetrius Poliorcetes, no. ' . explode('.', $recordId)[2];
+    } elseif ($project['name'] == 'lco') {
+        $title = str_replace("lco.yhd.", "YHD ", $recordId);
     } elseif ($project['name'] == 'pco'){
         $pieces = explode('.', $recordId);
         switch ($pieces[1]){
