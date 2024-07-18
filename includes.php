@@ -1517,7 +1517,7 @@ function get_title($recordId, $project){
     } elseif ($project['name'] == 'agco') {
         $title = 'Newell Demetrius Poliorcetes, no. ' . explode('.', $recordId)[2];
     } elseif ($project['name'] == 'lco') {
-        $title = str_replace("lco.yhd.", "YHD ", $recordId);
+        $title = str_replace("lco.yhd.", "Yehud Coinage ", $recordId);
     } elseif ($project['name'] == 'pco'){
         $pieces = explode('.', $recordId);
         switch ($pieces[1]){
