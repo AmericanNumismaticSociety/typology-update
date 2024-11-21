@@ -121,6 +121,14 @@
 			"types" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vScZ8Vu54EaqWh1u4qV0DN3UWBukyy_uHQscwJVtapE8RDsRGsqT1BBKiIimQuJeZNP_xY3zMPenm8M/pub?gid=428531414&single=true&output=csv",
 			"o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vScZ8Vu54EaqWh1u4qV0DN3UWBukyy_uHQscwJVtapE8RDsRGsqT1BBKiIimQuJeZNP_xY3zMPenm8M/pub?gid=239300392&single=true&output=csv",
 			"r" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vScZ8Vu54EaqWh1u4qV0DN3UWBukyy_uHQscwJVtapE8RDsRGsqT1BBKiIimQuJeZNP_xY3zMPenm8M/pub?gid=1672795545&single=true&output=csv"
+		},
+		{
+		    "name" : "coi",
+			"uri_space" : "https://numismatics.org/coi/id/",
+			"email" : "k.dahmen@smb.spk-berlin.de",
+			"types" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRssles9DnsStB5vROKmicZDq9lB-vl79LzQ7a_HZ1nDKoYcrwoc6SnyZAoyafaV0so7_ZJtnhR-pON/pub?gid=122733435&single=true&output=csv",
+			"o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRssles9DnsStB5vROKmicZDq9lB-vl79LzQ7a_HZ1nDKoYcrwoc6SnyZAoyafaV0so7_ZJtnhR-pON/pub?gid=444449035&single=true&output=csv",
+			"r" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRssles9DnsStB5vROKmicZDq9lB-vl79LzQ7a_HZ1nDKoYcrwoc6SnyZAoyafaV0so7_ZJtnhR-pON/pub?gid=179363108&single=true&output=csv"
 		}
 	]
 }
