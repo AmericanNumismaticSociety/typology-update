@@ -215,6 +215,12 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
                 foreach ($row as $k=>$v){
                     if (substr(strtolower($k), 0, 4) == 'note' && strlen(trim($v)) > 0){
                         $doc->startElement('note');
+                            if (preg_match('/^Note\s\((.*)\)$/', $k, $matches)){
+                                if (isset($matches[1])) {
+                                    $doc->writeAttribute('localType', $matches[1]);
+                                }
+                            }
+                        
                             $doc->writeAttribute('xml:lang', 'en');
                             $doc->text(trim($v));
                         $doc->endElement();    
@@ -1354,11 +1360,133 @@ function parse_refCode($refCode){
         case 'Mitchiner':
             $metadata = array('title'=>'Mitchiner', 'typeSeries'=>'http://nomisma.org/id/mitchiner-1976');
             break;
+        //LCO Yehud
         case 'TJC':
             $metadata = array('title'=> "TJC", 'typeSeries'=> 'https://donum.numismatics.org/bib/160000');
             break;
         case 'Hendin (2010)':
             $metadata = array('title'=> 'Hendin (2010)', 'typeSeries'=> 'https://zenon.dainst.org/Record/003002648');
+            break;
+        //LCO Samaria
+        case 'AJC I, Supplement I':
+            $metadata = array('title'=> 'Thompson, M., Mørkholm, O., and Kraay, C. M. 1973. An Inventory of Greek Coin Hoards (Supplement I). American Numismatic Society. New York ', 'typeSeries'=> 'https://donum.numismatics.org/bib/20683');
+            break;
+        case 'Alram 1986':
+            $metadata = array('title'=> 'Alram, M. 1986. Nomina Propia Iranica in Numis. Iranisches Personennamenbuch IV. Vienna.', 'typeSeries'=> 'https://search.worldcat.org/de/title/610372319');
+            break;
+        case 'Babelon 1893':
+            $metadata = array('title'=> 'Babelon, E. 1893. Les perses achéménides, les satrapes et les dynastes tributaires de leur empire Cypre & Phénicie. Paris.', 'typeSeries'=> 'https://search.worldcat.org/de/title/889853653');
+            break;
+        case 'Babelon 1910':
+            $metadata = array('title'=> 'Babelon, E. 1910. Traité des monnaies grecques et romaines. Deuxième partie. Description historique. Vol. II. Paris.', 'typeSeries'=> 'https://search.worldcat.org/de/title/1068297698');
+            break;
+        case 'BMC Palestine':
+            $metadata = array('title'=> 'Hill, G.F. 1914. Catalogue of the Greek Coins in the British Museum – Palestine. London.', 'typeSeries'=> 'https://search.worldcat.org/es/title/7439486');
+            break;
+        case 'Bodzek 2022':
+            $metadata = array('title'=> 'Bodzek, J. 2022. A Note on a Samarian Coin Type. A Royal Horseman? Gephyra 24: 143–149.', 'typeSeries'=> 'https://zenon.dainst.org/Record/003031520');
+            break;
+        case 'CH':
+            $metadata = array('title'=> 'Coin Hoards');
+            break;
+        case 'CHL':
+            $metadata = array('title'=> 'Meshorer, Y., Bijovsky, G. and Fischer-Bossert, W. 2013. Coins of the Holy Land: The Abraham and Marian Sofaer Collection at the American Numismatic Society and the Israel Museum. Ed. by D. Hendin and A. Meadows. New York.', 'typeSeries'=> 'https://donum.numismatics.org/bib/182209');
+            break;
+        case 'CNG':
+            $metadata = array('title'=> 'Classical Numismatic Group, LLC', 'typeSeries'=> 'https://www.cngcoins.com/');
+            break;
+        case 'CS':
+            $metadata = array('title'=> 'Meshorer, Y. and Qedar, S. 1991. The Coinage of Samaria of the Fourth Century BCE. Los Angeles and Jerusalem.', 'typeSeries'=> 'https://donum.numismatics.org/bib/52910');
+            break;
+        case 'Deutsch and Heltzer 1997':
+            $metadata = array('title'=> 'Deutsch, R. and Heltzer, M. 1997. Numismatic Evidence from the Persian Period from the Sharon Plain. Transeuphraténe 13: 17–20.', 'typeSeries'=> 'https://donum.numismatics.org/bib/148751');
+            break;
+        case 'Farhi 2016':
+            $metadata = array('title'=> 'Farhi, Y. 2016. Khirbet Qeiyafa 5. Excavation Report 2007–2013. The Numismatic Finds: Coins and Related Objects. Jerusalem.', 'typeSeries'=> 'https://search.worldcat.org/de/title/503449971');
+            break;
+        case 'Gitler 2013':
+            $metadata = array('title'=> 'Gitler, H., 2013. Samarian Coin Types Inspired by Athenian Iconography, in P. van Alfen and R. Witschonke eds., Essays in Honour of Roberto Russo. Zürich and London. Pp. 65–72.', 'typeSeries'=> 'https://donum.numismatics.org/bib/189963');
+            break;
+        case 'GT':
+            $metadata = array('title'=> 'Gitler, H. and Tal, O. 2006. Coins with the Aramaic Legend ŠHRW and Other Unrecorded Samarian Issues. Swiss Numismatic Review 85: 47–68.', 'typeSeries'=> 'https://zenon.dainst.org/Record/000736003');
+            break;
+        case 'Harrison 1982':
+            $metadata = array('title'=> 'Harrison, C.M. 1982. Coins of the Persian Satraps. Ph.D. Dissertation. University of Pennsylvania.', 'typeSeries'=> 'https://zenon.dainst.org/Record/001605064');
+            break;
+        case 'IAA':
+            $metadata = array('title'=> 'Israel Antiquities Authority', 'typeSeries'=> 'https://www.iaa.org.il/en/');
+            break;
+        case 'IMJ':
+            $metadata = array('title'=> 'Israel Museum, Jerusalem', 'typeSeries'=> 'https://www.imj.org.il/');
+            break;
+        case 'JC Samaria':
+            $metadata = array('title'=> 'Gitler, H., Jeselsohn, D., Johananoff, M. and Tal, O. 2024. The Jeselsohn Collection of Coins of the Holy Land, vol. I: Persian and Early Hellenistic Coinage. Jerusalem.', 'typeSeries'=> 'https://donum.numismatics.org/bib/220521');
+            break;
+        case 'Johananoff 2021':
+            $metadata = array('title'=> 'Johananoff, M. 2021. From Sidon to Samaria: Fourth-Century BCE Autonomous Coins of Samaria with Sidonian Motifs. Israel Numismatic Research 16: 3–34.', 'typeSeries'=> 'https://donum.numismatics.org/bib/211671');
+            break;
+        case 'Johananoff et al. 2022':
+            $metadata = array('title'=> 'Johananoff, M., Ashkenazi, D., Cohen, M., Gitler, H. and Tal, O. 2022. Typological and Metallurgical Analysis of a Repeated Overstrike on a ‘Lyre Player’ Coin Type Attributed to Samaria. Israel Numismatic Research 17: 3–26.', 'typeSeries'=> 'https://donum.numismatics.org/bib/215347');
+            break;
+        case 'Johananoff 2023':
+            $metadata = array('title'=> 'Johananoff, M. 2023. A Case of Competing Attributions: Small Anepigraphic Levantine Silver Coins with A Female Head and an Eagle on a Thunderbolt. Notae Numismaticae 18: 31–47.', 'typeSeries'=> 'https://search.worldcat.org/de/title/10485778668');
+            break;
+        case 'Kraay 1978':
+            $metadata = array('title'=> 'Kraay, C. 1978. Some Notes on the Abu Shusheh ‘Hoard’. Israel Exploration Journal 28: 190–192.', 'typeSeries'=> 'https://search.worldcat.org/de/title/9973422887');
+            break;
+        case 'Lambert 1932':
+            $metadata = array('title'=> 'Lambert, C. 1932. Egypto-Arabian, Phoenician, and other Coins of the Fourth Century B.C. Found in Palestine. Quarterly of the Department of Antiquities in Palestine 2: 1–10.', 'typeSeries'=> 'https://donum.numismatics.org/bib/142662');
+            break;
+        case 'Moysey':
+            $metadata = array('title'=> 'Moysey, R.A. 1989. Observations on the Numismatic Evidence Relating to the Great Satrapal Revolt of 362/1 B.C. Revue des Études Anciennes 91/1–2: 107–139.', 'typeSeries'=> 'https://donum.numismatics.org/bib/4075');
+            break;
+        case 'MQ':
+            $metadata = array('title'=> 'Meshorer, Y. and Qedar, S. 1999. Samarian Coinage. Publication of the Israel Numismatic Society (Numismatic Studies and Researches 9). Jerusalem.', 'typeSeries'=> 'https://donum.numismatics.org/bib/171355');
+            break;
+        case 'NAC':
+            $metadata = array('title'=> 'Numismatica Ars Classica NAC AG', 'typeSeries'=> 'https://www.arsclassicacoins.com/');
+            break;
+        case 'Narkiss 1938':
+            $metadata = array('title'=> 'Narkiss, M. 1938. Coins of Palestine, Part Two: The Coins of the Gentiles. Jerusalem (Hebrew).', 'typeSeries'=> 'https://donum.numismatics.org/bib/27844');
+            break;
+        case 'Newell 1938':
+            $metadata = array('title'=> 'Newell, E.T. 1938. Miscellanea numismatica: Cyrene to India (American Numismatic Society, Numismatic Notes and Monographs 82). New York.', 'typeSeries'=> 'https://donum.numismatics.org/bib/97810');
+            break;
+        case 'NH':
+            $metadata = array('title'=> 'Gitler, H. and Tal, O. 2019. The Nablus 1968 Hoard: A Study of Monetary Circulation in the Late Fourth and Early Third Centuries BCE Southern Levant (Numismatic Notes and Monographs 171). New York.', 'typeSeries'=> 'https://donum.numismatics.org/bib/204378');
+            break;
+        case 'Rynearson 2000':
+            $metadata = array('title'=> 'Rynearson, P. 2000. Descriptive Catalogue of Coins. In: Wallak Samuels, C., Rynearson, P. and Meshorer, Y., eds. The Numismatic Legacy of the Jews, as Depicted by a Distinguished American Collection. New York. Pp. 151–211.', 'typeSeries'=> 'https://donum.numismatics.org/bib/165002');
+            break;
+        case 'SH':
+            $metadata = array('title'=> 'Samaria Hoard ');
+            break;
+        case 'SHC':
+            $metadata = array('title'=> 'Maxim Shick Collection');
+            break;
+        case 'Six 1895':
+            $metadata = array('title'=> 'Six, J.P. 1888. Monnaies grecques inédites et incertaines. VII. Sabacès satrape d’Égypte, 333. Numismatic Chronicle (Third Series) 8: 97–137.', 'typeSeries'=> 'https://search.worldcat.org/es/title/9974350294');
+            break;
+        case 'SNG ANS':
+            $metadata = array('title'=> 'Sylloge Nummorum Graecorum: The Collection of the American Numismatic Society, Part 6, Palestine-South Arabia. New York 1981.', 'typeSeries'=> 'https://zenon.dainst.org/Record/000251121');
+            break;
+        case 'SNG Cop. Suppl.':
+            $metadata = array('title'=> 'Sylloge Nummorum Graecorum Copenhagen Supplement, Acquisitions 1942–1996. Copenhagen 2002.', 'typeSeries'=> 'https://zenon.dainst.org/Record/000068047');
+            break;
+        case 'Spaer 1979':
+            $metadata = array('title'=> 'Spaer, A. 1979. A Coin of Jeroboam? Israel Exploration Journal 29: 218.', 'typeSeries'=> 'https://donum.numismatics.org/bib/130933');
+            break;
+        case 'YC':
+            $metadata = array('title'=> 'Gitler, H., Lorber, C. and Fontanille, J.-P. 2023. The Yehud Coinage: A Die Study and Classification of the Provincial Silver Coinage of Judah. Publication of the Israel Numismatic Society (Numismatic Studies and Researches 12). Jerusalem.', 'typeSeries'=> 'https://donum.numismatics.org/bib/220028');
+            break;
+        case 'YR':
+            $metadata = array('title'=> 'Ronen, Y. 2007. Twenty Unrecorded Samarian Coins. Israel Numismatic Research 2: 29–33.', 'typeSeries'=> 'https://donum.numismatics.org/bib/178125');
+            break;
+        case 'Zlotnik 2016':
+            $metadata = array('title'=> 'Zlotnik, Y. 2016. Samarian Coin Types and Their Denominations. Israel Numismatic Research 11: 3–10.', 'typeSeries'=> 'https://donum.numismatics.org/bib/196688');
+            break;
+        case 'CSC':
+            $metadata = array('title'=> 'Gitler, H., Johananoff, M. and Tal, O. 2025. A Corpus of Samarian Coinage. Jerusalem.');
             break;
         default:
             $metadata = array('title'=>$refCode);

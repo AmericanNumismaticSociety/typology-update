@@ -111,9 +111,20 @@
 			"name" : "lco",
 			"uri_space" : "http://numismatics.org/lco/id/",
 			"email" : "pvanalfen@numismatics.org",
-			"types" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYIsP2PRhp3QA-Z2UiL142Czs-XEdCJfN0Y274XiTRnEBxhQXijvvt168OgTMv3sP4jJ8wnu2R8TIl/pub?gid=1853362774&single=true&output=csv",
-			"o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYIsP2PRhp3QA-Z2UiL142Czs-XEdCJfN0Y274XiTRnEBxhQXijvvt168OgTMv3sP4jJ8wnu2R8TIl/pub?gid=1223774619&single=true&output=csv",
-			"r" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYIsP2PRhp3QA-Z2UiL142Czs-XEdCJfN0Y274XiTRnEBxhQXijvvt168OgTMv3sP4jJ8wnu2R8TIl/pub?gid=1472724110&single=true&output=csv"
+			"parts":[
+				{
+					"name": "yehud",
+					"types" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYIsP2PRhp3QA-Z2UiL142Czs-XEdCJfN0Y274XiTRnEBxhQXijvvt168OgTMv3sP4jJ8wnu2R8TIl/pub?gid=1853362774&single=true&output=csv",
+					"o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYIsP2PRhp3QA-Z2UiL142Czs-XEdCJfN0Y274XiTRnEBxhQXijvvt168OgTMv3sP4jJ8wnu2R8TIl/pub?gid=1223774619&single=true&output=csv",
+					"r" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYIsP2PRhp3QA-Z2UiL142Czs-XEdCJfN0Y274XiTRnEBxhQXijvvt168OgTMv3sP4jJ8wnu2R8TIl/pub?gid=1472724110&single=true&output=csv"
+				},
+				{
+					"name": "samaria",
+					"types": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNjCus7lDWxVQXUeArIfH89qABTXqnvhBHEt609WrYGPK0x_IZXPK9BwErkhsOV-aw_At0iirwVItf/pub?gid=64113830&single=true&output=csv",
+					"o": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNjCus7lDWxVQXUeArIfH89qABTXqnvhBHEt609WrYGPK0x_IZXPK9BwErkhsOV-aw_At0iirwVItf/pub?gid=1057602949&single=true&output=csv",
+					"r": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNjCus7lDWxVQXUeArIfH89qABTXqnvhBHEt609WrYGPK0x_IZXPK9BwErkhsOV-aw_At0iirwVItf/pub?gid=534738279&single=true&output=csv"
+				}
+			]			
 		}, {
 			"name" : "aod",
 			"uri_space" : "http://numismatics.org/aod/id/",
