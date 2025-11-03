@@ -237,7 +237,7 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
         	}
         }
         
-        if ($hasSubjects == true){
+        if ($hasSubjects == true || $project == 'crro'){
         	$doc->startElement('subjectSet');
         	foreach ($row as $k=>$v){
         		if (substr(strtolower($k), 0, 7) == 'subject' && strlen(trim($v)) > 0){
@@ -266,6 +266,20 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
         			}
         		}
         	}
+        	
+        	//apply NLP for relevant typologies
+        	if ($project == 'crro') {
+        	    if (array_key_exists('Obverse Type Code', $row) && strlen($row['Obverse Type Code']) > 0) {
+        	        $key = $row['Obverse Type Code'];
+        	        foreach ($obverses as $desc){
+        	            if ($desc['code'] == $key){        	                
+        	                $text = $desc['en'];
+        	                
+        	                
+        	            }
+        	        }
+        	    }
+        	}        	
         	$doc->endElement();
         }
         
@@ -467,7 +481,7 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
         }
         
         //authority
-        if (array_key_exists('Authority URI', $row) || array_key_exists('Stated Authority URI', $row) || array_key_exists('Issuer URI', $row) || array_key_exists('Artist URI', $row) || array_key_exists('Maker URI', $row) || array_key_exists('Authenticity URI', $row)){
+        if (array_key_exists('Authority URI', $row) || array_key_exists('Stated Authority URI', $row) || array_key_exists('Issuer URI', $row) || array_key_exists('Artist URI', $row) || array_key_exists('Maker URI', $row) || array_key_exists('Authenticity URI', $row) || array_key_exists('Personal Name URI', $row)){
             $doc->startElement('authority');
             if (array_key_exists('Authority URI', $row) && strlen($row['Authority URI']) > 0){
                 $vals = explode('|', $row['Authority URI']);
@@ -534,6 +548,32 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
                         $content = processUri($uri);
                     }
                     $role = 'issuer';
+                    
+                    $doc->startElement($content['element']);
+                        $doc->writeAttribute('xlink:type', 'simple');
+                        $doc->writeAttribute('xlink:role', $role);
+                        $doc->writeAttribute('xlink:href', $uri);
+                        if($uncertainty == true){
+                            $doc->writeAttribute('certainty', 'http://nomisma.org/id/uncertain_value');
+                        }
+                        $doc->text($content['label']);
+                    $doc->endElement();
+                }
+            }
+            
+            if (array_key_exists('Personal Name URI', $row) && strlen($row['Personal Name URI']) > 0){
+                $vals = explode('|', $row['Personal Name URI']);
+                foreach ($vals as $val){
+                    if (substr($val, -1) == '?'){
+                        $uri = substr($val, 0, -1);
+                        $uncertainty = true;
+                        $content = processUri($uri);
+                    } else {
+                        $uri =  $val;
+                        $uncertainty = false;
+                        $content = processUri($uri);
+                    }
+                    $role = 'namedEntity';
                     
                     $doc->startElement($content['element']);
                         $doc->writeAttribute('xlink:type', 'simple');
