@@ -15,6 +15,9 @@ define("NUMISHARE_SOLR_URL", "http://localhost:8983/solr/numishare/update");
 define("EXIST_URL", "http://localhost:8888/exist/rest/db/");
 define("INDEX_COUNT", 100);
 
+//Natural Language Processing alignment via FastAPI
+define("NLP_API", "http://localhost:8000/extract");
+
 //load JSON projects
 $projects_json = file_get_contents('projects.json');
 $projects = json_decode($projects_json, false);
@@ -23,7 +26,7 @@ $projectExists = false;
 
 
 //$mode should be 'test' or 'prod', which determines whether the NUDS/XML is written to the console or to eXist-db and indexed into Numishare
-$mode = 'prod';
+$mode = 'test';
 
 $nomismaUris = array();
 $errors = array();
