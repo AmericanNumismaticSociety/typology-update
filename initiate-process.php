@@ -16,7 +16,7 @@ define("EXIST_URL", "http://localhost:8888/exist/rest/db/");
 define("INDEX_COUNT", 100);
 
 //Natural Language Processing alignment via FastAPI
-define("NLP_API", "http://localhost:8000/extract");
+define("NLP_API", "https://numismatics.org/nnlp/extract");
 
 //load JSON projects
 $projects_json = file_get_contents('projects.json');
@@ -26,7 +26,7 @@ $projectExists = false;
 
 
 //$mode should be 'test' or 'prod', which determines whether the NUDS/XML is written to the console or to eXist-db and indexed into Numishare
-$mode = 'test';
+$mode = 'prod';
 
 $nomismaUris = array();
 $errors = array();

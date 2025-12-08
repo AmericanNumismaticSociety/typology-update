@@ -237,7 +237,7 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
         	}
         }
         
-        if ($hasSubjects == true || $project == 'crro'){
+        if ($hasSubjects == true || $project['name'] == 'crro'){
         	$doc->startElement('subjectSet');
         	foreach ($row as $k=>$v){
         		if (substr(strtolower($k), 0, 7) == 'subject' && strlen(trim($v)) > 0){
@@ -268,16 +268,53 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
         	}
         	
         	//apply NLP for relevant typologies
-        	if ($project == 'crro') {
+        	if ($project['name'] == 'crro') {
+        	    $terms = array();
+        	    
+        	    //sort into distinct terms
         	    if (array_key_exists('Obverse Type Code', $row) && strlen($row['Obverse Type Code']) > 0) {
         	        $key = $row['Obverse Type Code'];
         	        foreach ($obverses as $desc){
         	            if ($desc['code'] == $key){        	                
         	                $text = $desc['en'];
         	                
+        	                $json = file_get_contents(NLP_API . '?text=' . urlencode($text));
+        	                $obj = json_decode($json);
+        	                
+        	                foreach ($obj as $term) {
+        	                    $terms[$term->uri] = $term->label;
+        	                }
         	                
         	            }
         	        }
+        	    }
+        	    
+        	    if (array_key_exists('Reverse Type Code', $row) && strlen($row['Reverse Type Code']) > 0) {
+        	        $key = $row['Reverse Type Code'];
+        	        foreach ($reverses as $desc){
+        	            if ($desc['code'] == $key){
+        	                $text = $desc['en'];
+        	                
+        	                $json = file_get_contents(NLP_API . '?text=' . urlencode($text));
+        	                $obj = json_decode($json);
+        	                
+        	                foreach ($obj as $term) {
+        	                    $terms[$term->uri] = $term->label;
+        	                }
+        	                
+        	            }
+        	        }
+        	    }
+        	    
+        	    //output sorted terms into subjects        	    
+        	    asort($terms);
+        	    foreach ($terms as $uri=>$subject) {
+        	        $doc->startElement('subject');
+                        $doc->writeAttribute('localType', 'concept');
+            	        $doc->writeAttribute('xlink:type', 'simple');
+            	        $doc->writeAttribute('xlink:href', $uri);
+            	        $doc->text($subject);
+        	        $doc->endElement();
         	    }
         	}        	
         	$doc->endElement();
