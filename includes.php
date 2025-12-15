@@ -237,7 +237,7 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
         	}
         }
         
-        if ($hasSubjects == true || ($project['name'] == 'crro' || $project['name'] == 'lco')){
+        if ($hasSubjects == true || in_array($project['name'], NLP_PROJECTS)){
         	$doc->startElement('subjectSet');
         	foreach ($row as $k=>$v){
         		if (substr(strtolower($k), 0, 7) == 'subject' && strlen(trim($v)) > 0){
@@ -268,7 +268,7 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
         	}
         	
         	//apply NLP for relevant typologies
-        	if ($project['name'] == 'crro' || $project['name'] == 'lco') {
+        	if (in_array($project['name'], NLP_PROJECTS)) {
         	    $terms = array();
         	    
         	    //sort into distinct terms

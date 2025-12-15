@@ -17,6 +17,7 @@ define("INDEX_COUNT", 100);
 
 //Natural Language Processing alignment via FastAPI
 define("NLP_API", "https://numismatics.org/nnlp/extract");
+define("NLP_PROJECTS", array('crro', 'agco', 'bigr', 'lco', 'pco', 'pella', 'sco'));
 
 //load JSON projects
 $projects_json = file_get_contents('projects.json');
