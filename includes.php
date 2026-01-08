@@ -171,6 +171,11 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
             
             //semanticDeclaration
             $doc->startElement('semanticDeclaration');
+                $doc->writeElement('prefix', 'crm');
+                $doc->writeElement('namespace', 'http://www.cidoc-crm.org/cidoc-crm/');
+            $doc->endElement();
+            
+            $doc->startElement('semanticDeclaration');
                 $doc->writeElement('prefix', 'dcterms');
                 $doc->writeElement('namespace', 'http://purl.org/dc/terms/');
             $doc->endElement();
@@ -645,6 +650,14 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
                         if($uncertainty == true){
                             $doc->writeAttribute('certainty', 'http://nomisma.org/id/uncertain_value');
                         }
+                        //if there is an Artist Arcrole
+                        if (array_key_exists('Artist Arcrole', $row) && strlen($row['Artist Arcrole']) > 0) {
+                            $doc->writeAttribute('xlink:arcrole', $row['Artist Arcrole']);
+                        }
+                        if (array_key_exists('Artist Attribution Qualifier', $row) && strlen($row['Artist Attribution Qualifier']) > 0) {
+                            $doc->writeAttribute('attributionQualifier', $row['Artist Attribution Qualifier']);
+                        }
+                        
                         $doc->text($content['label']);
                     $doc->endElement();
                 }
@@ -1565,6 +1578,9 @@ function parse_refCode($refCode){
         case 'CSC':
             $metadata = array('title'=> 'Gitler, H., Johananoff, M. and Tal, O. 2025. A Corpus of Samarian Coinage. Jerusalem.');
             break;
+        case 'Hill':
+            $metadata = array('title'=> 'A corpus of Italian medals of the Renaissance before Cellini.', 'typeSeries' => 'https://donum.numismatics.org/bib/28246');
+            break;
         default:
             $metadata = array('title'=>$refCode);
     }
@@ -1596,6 +1612,17 @@ function render_legend($doc, $row, $side){
                     $doc->writeAttribute('type', 'transliteration');
                     $doc->startElement('tei:ab');
                         $doc->text(trim($row[$side . ' Legend Transliteration']));
+                    $doc->endElement();
+                $doc->endElement();
+            }
+            
+            //translation
+            if (array_key_exists($side . ' Legend Translation', $row) && strlen(trim($row[$side . ' Legend Translation'])) > 0){
+                $doc->startElement('tei:div');
+                    $doc->writeAttribute('type', 'translation');
+                    $doc->writeAttribute('xml:lang', 'en');
+                    $doc->startElement('tei:ab');
+                        $doc->text(trim($row[$side . ' Legend Translation']));
                     $doc->endElement();
                 $doc->endElement();
             }
