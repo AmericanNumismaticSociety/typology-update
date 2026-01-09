@@ -1579,7 +1579,7 @@ function parse_refCode($refCode){
             $metadata = array('title'=> 'Gitler, H., Johananoff, M. and Tal, O. 2025. A Corpus of Samarian Coinage. Jerusalem.');
             break;
         case 'Hill':
-            $metadata = array('title'=> 'A corpus of Italian medals of the Renaissance before Cellini.', 'typeSeries' => 'https://donum.numismatics.org/bib/28246');
+            $metadata = array('title'=> 'Hill, George Fancis. 1930. A corpus of Italian medals of the Renaissance before Cellini.', 'typeSeries' => 'https://donum.numismatics.org/bib/28246');
             break;
         default:
             $metadata = array('title'=>$refCode);
@@ -1594,7 +1594,7 @@ function render_legend($doc, $row, $side){
         $legend = trim($row[$side . ' Legend']);
         
         $doc->startElement('legend');
-        if ((array_key_exists($side . ' Legend Orientation', $row) && strlen($row[$side . ' Legend Orientation']) > 0) || (array_key_exists($side . ' Legend Tranliteration', $row) && strlen($row[$side . ' Legend Tranliteration']) > 0)){
+        if ((array_key_exists($side . ' Legend Orientation', $row) && strlen($row[$side . ' Legend Orientation']) > 0) || (array_key_exists($side . ' Legend Tranliteration', $row) && strlen($row[$side . ' Legend Tranliteration']) > 0) || (array_key_exists($side . ' Legend Translation', $row) && strlen($row[$side . ' Legend Translation']) > 0)){
             //edition
             $doc->startElement('tei:div');
                 $doc->writeAttribute('type', 'edition');
@@ -1730,6 +1730,8 @@ function get_typeNumber($recordId, $project){
         } else {
             $typeNumber = $idPieces[2];
         }
+    } elseif ($project['name'] == 'cm') {
+        $typeNumber = str_replace('cm.', '', $recordId);
     } else {
         $typeNumber = "Update get_typeNumber() function";
     }
@@ -1822,6 +1824,8 @@ function get_title($recordId, $project){
         }
         
         $title = "Bactrian and Indo-Greek Coinage {$name} {$typeNumber}";
+    } elseif ($project['name'] == 'cm') {
+        $title = "Condottieri Medals " . str_replace('cm.', '', $recordId);
     } else {
         $title = "Update get_title() function";
     }
@@ -2375,7 +2379,10 @@ function processUri($uri){
     		//perform Wikidata Query
     		if (preg_match('/^http:\/\/www\.wikidata\.org\/entity\/Q[0-9]+$/', $uri)){
     			//echo "Wikidata URI found\n";
-    			$nomismaUris[$uri] = query_wikidata($uri);
+    			 $wd_array = query_wikidata($uri);
+    			 $nomismaUris[$uri] = $wd_array;
+    			 $label = $wd_array['label'];
+    			 $type = $wd_array['type'];
     		} else {
     			//look the URI up in Nomisma or assume a Numishare system
     			$file_headers = @get_headers($uri);
@@ -2518,6 +2525,8 @@ WHERE {
     
     $types = $xpath->query("descendant::rdf:type");
     $label = $xpath->query("descendant::skos:prefLabel[@xml:lang='en']")->item(0)->nodeValue;
+    
+    //echo "Label: " . $label . "\n\n\n";
     
     //evaluate whether the concept is a human
     $isHuman = false;
