@@ -140,6 +140,14 @@
 			"types" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRssles9DnsStB5vROKmicZDq9lB-vl79LzQ7a_HZ1nDKoYcrwoc6SnyZAoyafaV0so7_ZJtnhR-pON/pub?gid=122733435&single=true&output=csv",
 			"o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRssles9DnsStB5vROKmicZDq9lB-vl79LzQ7a_HZ1nDKoYcrwoc6SnyZAoyafaV0so7_ZJtnhR-pON/pub?gid=444449035&single=true&output=csv",
 			"r" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRssles9DnsStB5vROKmicZDq9lB-vl79LzQ7a_HZ1nDKoYcrwoc6SnyZAoyafaV0so7_ZJtnhR-pON/pub?gid=179363108&single=true&output=csv"
+		},
+		{
+			"name": "cm",
+			"uri_space" : "http://numismatics.org/cm/id/",
+			"email" : "pvanalfen@numismatics.org",
+			"types" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgLCfF1iNK72FYvbH3ilSWVDr8XUyudVCAgGd3KLqNb_rdxBJY4-JzpwSNdL2dmC7WODV28JLpXK1e/pub?gid=1689051250&single=true&output=csv",
+			"o" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgLCfF1iNK72FYvbH3ilSWVDr8XUyudVCAgGd3KLqNb_rdxBJY4-JzpwSNdL2dmC7WODV28JLpXK1e/pub?gid=1174118599&single=true&output=csv",
+			"r" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgLCfF1iNK72FYvbH3ilSWVDr8XUyudVCAgGd3KLqNb_rdxBJY4-JzpwSNdL2dmC7WODV28JLpXK1e/pub?gid=306666530&single=true&output=csv"		
 		}
 	]
 }
