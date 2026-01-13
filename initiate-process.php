@@ -27,7 +27,7 @@ $projectExists = false;
 
 
 //$mode should be 'test' or 'prod', which determines whether the NUDS/XML is written to the console or to eXist-db and indexed into Numishare
-$mode = 'test';
+$mode = 'prod';
 
 $nomismaUris = array();
 $errors = array();
