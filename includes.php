@@ -717,7 +717,7 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
         
         //geography
         //mint
-        if ((array_key_exists('Mint URI', $row) && strlen($row['Mint URI']) > 0) || (array_key_exists('Region URI', $row) && strlen($row['Region URI']) > 0)){
+        if ((array_key_exists('Mint URI', $row) && strlen($row['Mint URI']) > 0) || (array_key_exists('Region URI', $row) && strlen($row['Region URI']) > 0) || (array_key_exists('Place of Production URI', $row) && strlen($row['Place of Production URI']) > 0) || (array_key_exists('Place of Issue URI', $row) && strlen($row['Place of Issue URI']) > 0)){
             $doc->startElement('geographic');
             if (array_key_exists('Mint URI', $row) && strlen($row['Mint URI']) > 0){
                 $vals = explode('|', $row['Mint URI']);
@@ -740,6 +740,60 @@ function generate_nuds($row, $project, $eXist_credentials, $obverses, $reverses,
                             $doc->writeAttribute('certainty', 'http://nomisma.org/id/uncertain_value');
                         }
                         $doc->text($content['label']);
+                    $doc->endElement();
+                    
+                    unset($uncertainty);
+                }
+            }
+            
+            if (array_key_exists('Place of Production URI', $row) && strlen($row['Place of Production URI']) > 0){
+                $vals = explode('|', $row['Place of Production URI']);
+                foreach ($vals as $val){
+                    if (substr($val, -1) == '?'){
+                        $uri = substr($val, 0, -1);
+                        $uncertainty = true;
+                        $content = processUri($uri);
+                    } else {
+                        $uri =  $val;
+                        $uncertainty = false;
+                        $content = processUri($uri);
+                    }
+                    
+                    $doc->startElement('geogname');
+                    $doc->writeAttribute('xlink:type', 'simple');
+                    $doc->writeAttribute('xlink:role', 'productionPlace');
+                    $doc->writeAttribute('xlink:href', $uri);
+                    if($uncertainty == true){
+                        $doc->writeAttribute('certainty', 'http://nomisma.org/id/uncertain_value');
+                    }
+                    $doc->text($content['label']);
+                    $doc->endElement();
+                    
+                    unset($uncertainty);
+                }
+            }
+            
+            if (array_key_exists('Place of Issue URI', $row) && strlen($row['Place of Issue URI']) > 0){
+                $vals = explode('|', $row['Place of Issue URI']);
+                foreach ($vals as $val){
+                    if (substr($val, -1) == '?'){
+                        $uri = substr($val, 0, -1);
+                        $uncertainty = true;
+                        $content = processUri($uri);
+                    } else {
+                        $uri =  $val;
+                        $uncertainty = false;
+                        $content = processUri($uri);
+                    }
+                    
+                    $doc->startElement('geogname');
+                    $doc->writeAttribute('xlink:type', 'simple');
+                    $doc->writeAttribute('xlink:role', 'issuePlace');
+                    $doc->writeAttribute('xlink:href', $uri);
+                    if($uncertainty == true){
+                        $doc->writeAttribute('certainty', 'http://nomisma.org/id/uncertain_value');
+                    }
+                    $doc->text($content['label']);
                     $doc->endElement();
                     
                     unset($uncertainty);
@@ -2383,6 +2437,11 @@ function processUri($uri){
     			 $nomismaUris[$uri] = $wd_array;
     			 $label = $wd_array['label'];
     			 $type = $wd_array['type'];
+    		} elseif (preg_match('/^https:\/\/sws\.geonames\.org\/[0-9]+\/$/', $uri)) {
+    		    $geonames_array = query_geonames($uri);
+    		    $nomismaUris[$uri] = $geonames_array;
+    		    $label = $geonames_array['label'];
+    		    $type = $geonames_array['type'];
     		} else {
     			//look the URI up in Nomisma or assume a Numishare system
     			$file_headers = @get_headers($uri);
@@ -2426,6 +2485,7 @@ function processUri($uri){
     			break;
     		case 'nmo:Mint':
     		case 'nmo:Region':
+    		case 'place':
     			$content['element'] = 'geogname';
     			$content['label'] = $label;
     			if (isset($parent)){
@@ -2498,6 +2558,7 @@ function processUri($uri){
     
 }
 
+//query Wikidata for preferred label via SPARQL
 function query_wikidata($uri){
     $query = "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -2544,6 +2605,20 @@ WHERE {
     }
     
     return array('label'=>$label,'type'=>$type);
+}
+
+//query Geonames API
+function query_geonames($uri) {
+    $geonamesID = explode('/', $uri)[3];
+    
+    //query Geonames API
+    $query_url = "http://api.geonames.org/getJSON?geonameId={$geonamesID}&username=" . GEONAMES_KEY;
+    $json = file_get_contents($query_url);
+    $obj = json_decode($json);
+    
+    $label = $obj->name;
+    
+    return array('label'=>$label,'type'=>'place');
 }
 
 function get_date_textual($year){

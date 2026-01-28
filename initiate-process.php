@@ -14,6 +14,7 @@ ini_set('user_agent', 'American Numismatic Society');
 define("NUMISHARE_SOLR_URL", "http://localhost:8983/solr/numishare/update");
 define("EXIST_URL", "http://localhost:8888/exist/rest/db/");
 define("INDEX_COUNT", 100);
+define("GEONAMES_KEY", "");
 
 //Natural Language Processing alignment via FastAPI
 define("NLP_API", "https://numismatics.org/nnlp/extract");
